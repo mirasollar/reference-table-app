@@ -417,20 +417,21 @@ elif st.session_state['upload-tables']:
                     # Check if the table name already exists in the selected bucket
                     existing_tables = client.buckets.list_tables(bucket_id=selected_bucket)
                     existing_table_names = [table['name'] for table in existing_tables]
+                    st.write(f"Bucket name: '{selected_bucket}'")
 
                     if st.session_state.action_clicked:
                         if table_name in existing_table_names:
-                            st.write("Název tabulky '{table_name}' je už použit. Přeješ si pokračovat? Tabulka bude smazána a nahrazena tou tvojí!")
+                            st.write(f"Název tabulky '{table_name}' je už použit. Přeješ si pokračovat? Tabulka bude smazána a nahrazena tou tvojí!")
                             if st.button('Upload anyway'):
                                 table_id = 'out.c-MSO_ADHOC_dummy_data.aab_customer'
                                 client.tables.delete(table_id=table_id)
                                 st.write("Akce byla úspěšně potvrzena!")
-                                st.write("Bucket name: '{selected_bucket}'")
+                                
                                 st.session_state.action_clicked = False
                                 st.session_state.creating_table = True
                             else:
                                 st.write("Čekání na potvrzení...")
-                        
+'''
                     if st.session_state.creating_table:
                         # Save the uploaded file to a temporary path
                         temp_file_path = f"/tmp/{uploaded_file.name}"
@@ -461,6 +462,7 @@ elif st.session_state['upload-tables']:
 
                         except Exception as e:
                             st.error(f"Error: {str(e)}")
+'''
             else:
                 st.error('Error: Please select a bucket, upload a file, and enter a table name. Please check if you have permission to create a new bucket and table.')
 

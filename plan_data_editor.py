@@ -399,37 +399,18 @@ elif st.session_state['upload-tables']:
         # Input for table name
         table_name = st.text_input("Enter table name")
 
-        if 'action_clicked' not in st.session_state:
-            st.session_state.action_clicked = False
-
-        if 'creating_table' not in st.session_state:
-            st.session_state.creating_table = False
-
         # Upload button
         if st.button('Upload'):
-            st.session_state.action_clicked = True
-            if selected_bucket and uploaded_file and table_name:
-                string_check = '^[\w-]*$'
-                # check a valid table name
-                if bool(re.match(string_check, table_name)) == False:
-                    st.error('Error: In a table name are allowed only alphanumeric characters, dashes, and underscores.')
-                else:
-                    # Check if the table name already exists in the selected bucket
-                    existing_tables = client.buckets.list_tables(bucket_id=selected_bucket)
-                    existing_table_names = [table['name'] for table in existing_tables]
-                    st.write(f"Bucket name: '{selected_bucket}'")
+            table_id = 'out.c-MSO_ADHOC_dummy_data.aab_customer'
+            client.tables.delete(table_id=table_id)                   
+            st.session_state['upload-tables'] = False
+            st.session_state['selected-table'] = None
+            time.sleep(4)
+            st.success('Akce byla úspěšně potvrzena!', icon = "🎉")
+            st.cache_data.clear()
+            st.session_state["tables_id"] = fetch_all_ids()
+            time.sleep(4)
+            st.rerun()
 
-                    if st.session_state.action_clicked:
-                        if table_name in existing_table_names:
-                            st.write(f"Název tabulky '{table_name}' je už použit. Přeješ si pokračovat? Tabulka bude smazána a nahrazena tou tvojí!")
-                            if st.button('Upload anyway'):
-                                table_id = 'out.c-MSO_ADHOC_dummy_data.aab_customer'
-                                client.tables.delete(table_id=table_id)
-                                st.write("Akce byla úspěšně potvrzena!")
-                                
-                                st.session_state.action_clicked = False
-                                st.session_state.creating_table = True
-                            else:
-                                st.write("Čekání na potvrzení...")
 
 display_footer_section()

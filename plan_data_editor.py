@@ -412,7 +412,7 @@ elif st.session_state['upload-tables']:
                     existing_table_names = [table['name'] for table in existing_tables]
 
                     if table_name in existing_table_names:
-                        st.error(f"Error: Table name '{table_name}' already exists in the selected bucket. '{existing_tables}'")
+                        st.error(f"Error: Table name '{table_name}' already exists in the selected bucket: '{selected_bucket}'")
                         if st.button("Upload anyway"):
                             st.session_state['upload-tables'] = False
                             st.session_state['selected-table'] = None

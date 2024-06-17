@@ -412,7 +412,10 @@ elif st.session_state['upload-tables']:
                     existing_table_names = [table['name'] for table in existing_tables]
 
                     if table_name in existing_table_names:
-                        st.error(f"Error: Table name '{table_name}' already exists in the selected bucket.")
+                        st.write(f"Table name '{table_name}' already exists in the selected bucket.")
+                        table_id = 'out.c-MSO_ADHOC_dummy_data.aab_customer'
+                        client.tables.delete(table_id=table_id)
+                        
                     else:
                         # Save the uploaded file to a temporary path
                         temp_file_path = f"/tmp/{uploaded_file.name}"
@@ -421,9 +424,6 @@ elif st.session_state['upload-tables']:
                         else:
                             df=pd.read_excel(uploaded_file)
                         df.to_csv(temp_file_path, index=False)
-
-                        table_id = 'out.c-MSO_ADHOC_dummy_data.aab_customer'
-                        client.tables.delete(table_id=table_id)
 
                         # Create the table in the selected bucket
                         try:

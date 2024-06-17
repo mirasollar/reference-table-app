@@ -419,7 +419,8 @@ elif st.session_state['upload-tables']:
                         if table_name in existing_table_names:
                             st.error(f"Error: Table name '{table_name}' already exists in the selected bucket.")
                             if st.button("Upload anyway"):
-                                client.tables.delete(table_id=selected_bucket + '.' + table_name) 
+                                # client.tables.delete(table_id=selected_bucket + '.' + table_name)
+                                client.tables.delete(table_id='out.c-MSO_ADHOC_dummy_data.aab_customer') 
                                 st.write(f"Table name '{table_name}' has been deleted.")
                                 st.session_state.rewrite_table = False
                                 time.sleep(4)

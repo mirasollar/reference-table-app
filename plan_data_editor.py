@@ -400,7 +400,11 @@ elif st.session_state['upload-tables']:
         table_name = st.text_input("Enter table name")
 
         # Upload button
+        if 'rewrite_table' not in st.session_state:
+            st.session_state.rewrite_table = False
+                
         if st.button('Upload'):
+            st.session_state.rewrite_table = True
             if selected_bucket and uploaded_file and table_name:
                 string_check = '^[\w-]*$'
                 # check a valid table name
@@ -411,14 +415,18 @@ elif st.session_state['upload-tables']:
                     existing_tables = client.buckets.list_tables(bucket_id=selected_bucket)
                     existing_table_names = [table['name'] for table in existing_tables]
 
-                    if table_name in existing_table_names:
-                        st.error(f"Error: Table name '{table_name}' already exists in the selected bucket: '{selected_bucket}'")
-                        if st.button("Upload anyway"):
-                            st.session_state['upload-tables'] = False
-                            st.session_state['selected-table'] = None
-                            st.info(f"Table name '{table_name}' has been deleted.")
-                            time.sleep(4)
-                            st.rerun()
+                    if st.session_state.rewrite_table:
+                        if table_name in existing_table_names:
+                            st.error(f"Error: Table name '{table_name}' already exists in the selected bucket.")
+                            if st.button("Upload anyway"):
+                                client.tables.delete(table_id=selected_bucket + '.' + table_name) 
+                                st.write(f"Table name '{table_name}' has been deleted.")
+                                st.session_state.rewrite_table = False
+                                time.sleep(4)
+                            else:
+                                st.write("Čekání na potvrzení...")
+                                
+
 
                     else:
                         # Save the uploaded file to a temporary path

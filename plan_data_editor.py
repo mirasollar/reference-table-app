@@ -400,11 +400,7 @@ elif st.session_state['upload-tables']:
         table_name = st.text_input("Enter table name")
 
         # Upload button
-        if 'rewrite_table' not in st.session_state:
-            st.session_state.rewrite_table = False
-                
         if st.button('Upload'):
-            st.session_state.rewrite_table = True
             if selected_bucket and uploaded_file and table_name:
                 string_check = '^[\w-]*$'
                 # check a valid table name
@@ -415,20 +411,8 @@ elif st.session_state['upload-tables']:
                     existing_tables = client.buckets.list_tables(bucket_id=selected_bucket)
                     existing_table_names = [table['name'] for table in existing_tables]
 
-                    if st.session_state.rewrite_table:
-                        if table_name in existing_table_names:
-                            st.error(f"Error: Table name '{table_name}' already exists in the selected bucket.")
-                            if st.button("Upload anyway"):
-                                # client.tables.delete(table_id=selected_bucket + '.' + table_name)
-                                # client.tables.delete(table_id='out.c-MSO_ADHOC_dummy_data.aab_customer') 
-                                st.write(f"Table name '{table_name}' has been deleted.")
-                                st.session_state.rewrite_table = False
-                                time.sleep(4)
-                            else:
-                                st.write("Čekání na potvrzení...")
-                                
-
-
+                    if table_name in existing_table_names:
+                        st.error(f"Error: Table name '{table_name}' already exists in the selected bucket.")
                     else:
                         # Save the uploaded file to a temporary path
                         temp_file_path = f"/tmp/{uploaded_file.name}"
@@ -438,7 +422,8 @@ elif st.session_state['upload-tables']:
                             df=pd.read_excel(uploaded_file)
                         df.to_csv(temp_file_path, index=False)
 
-                        client.tables.delete(table_id='out.c-MSO_ADHOC_dummy_data.aab_customer')
+                        table_id = 'out.c-MSO_ADHOC_dummy_data.aab_customer'
+                        client.tables.delete(table_id=table_id)
 
                         # Create the table in the selected bucket
                         try:

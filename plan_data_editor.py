@@ -420,7 +420,7 @@ elif st.session_state['upload-tables']:
                             st.error(f"Error: Table name '{table_name}' already exists in the selected bucket.")
                             if st.button("Upload anyway"):
                                 # client.tables.delete(table_id=selected_bucket + '.' + table_name)
-                                client.tables.delete(table_id='out.c-MSO_ADHOC_dummy_data.aab_customer') 
+                                # client.tables.delete(table_id='out.c-MSO_ADHOC_dummy_data.aab_customer') 
                                 st.write(f"Table name '{table_name}' has been deleted.")
                                 st.session_state.rewrite_table = False
                                 time.sleep(4)
@@ -437,6 +437,8 @@ elif st.session_state['upload-tables']:
                         else:
                             df=pd.read_excel(uploaded_file)
                         df.to_csv(temp_file_path, index=False)
+
+                        client.tables.delete(table_id='out.c-MSO_ADHOC_dummy_data.aab_customer')
 
                         # Create the table in the selected bucket
                         try:

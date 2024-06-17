@@ -462,8 +462,8 @@ elif st.session_state['upload-tables']:
 
                         except Exception as e:
                             st.error(f"Error: {str(e)}")
-'''
+
             else:
                 st.error('Error: Please select a bucket, upload a file, and enter a table name. Please check if you have permission to create a new bucket and table.')
-
+'''
 display_footer_section()

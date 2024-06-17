@@ -414,7 +414,8 @@ elif st.session_state['upload-tables']:
                     if table_name in existing_table_names:
                         st.error(f"Error: Table name '{table_name}' already exists in the selected bucket.")
                         if st.button("Upload anyway"):
-                            st.info('Uploaded')
+                            st.info(f"Table name '{table_name}' has been deleted.")
+                            time.sleep(4)
 
                     else:
                         # Save the uploaded file to a temporary path

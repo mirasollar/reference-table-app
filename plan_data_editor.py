@@ -402,8 +402,8 @@ elif st.session_state['upload-tables']:
         if 'action_clicked' not in st.session_state:
             st.session_state.action_clicked = False
 
-        if 'table_ready' not in st.session_state:
-            st.session_state.table_ready = True
+        # if 'table_ready' not in st.session_state:
+        #     st.session_state.table_ready = True
 
         # Upload button
         if st.button('Upload'):
@@ -419,20 +419,18 @@ elif st.session_state['upload-tables']:
                     # Check if the table name already exists in the selected bucket
                     existing_tables = client.buckets.list_tables(bucket_id=selected_bucket)
                     existing_table_names = [table['name'] for table in existing_tables]
-                    # st.write(f"Existing table names: '{existing_table_names}'")
-                        
+
                     if st.session_state.action_clicked:
                         if table_name in existing_table_names:
                             st.error(f"Error: Table name '{table_name}' already exists in the selected bucket. Přeješ si pokračovat? Tabulka bude smazána a nahrazena tou tvojí!")
-                            st.session_state.table_ready = False
-                            st.write(f"Existing table names: '{existing_table_names}'")
+                            # st.session_state.table_ready = False
                             if st.button('Upload anyway'):
                                 table_id = 'out.c-MSO_ADHOC_dummy_data.aab_customer'
                                 client.tables.delete(table_id=table_id)
                                 st.write("Akce byla úspěšně potvrzena!")
                                 # Resetování stavu
                                 st.session_state.action_clicked = False
-                                st.session_state.table_ready = True
+                                # st.session_state.table_ready = True
                                 time.sleep(4)
                                 st.session_state['upload-tables'] = False
                                 st.session_state['selected-table'] = None
@@ -444,36 +442,5 @@ elif st.session_state['upload-tables']:
                             else:
                                 st.write("Čekání na potvrzení...")
                     
-'''
-        if st.session_state.table_ready:
-            # Save the uploaded file to a temporary path
-            temp_file_path = f"/tmp/{uploaded_file.name}"
-            if Path(uploaded_file.name).suffix == '.csv':
-                df=pd.read_csv(uploaded_file)
-            else:
-                df=pd.read_excel(uploaded_file)
-            df.to_csv(temp_file_path, index=False)
-
-            # Create the table in the selected bucket
-            try:
-                with st.spinner('Uploading...'):
-                    client.tables.create(
-                    name=table_name,
-                    bucket_id=selected_bucket,
-                    file_path=temp_file_path,
-                    primary_key=[]
-                    )
-                    st.session_state['upload-tables'] = False
-                    st.session_state['selected-table'] = None
-                    # st.session_state['selected-table'] = selected_bucket+"."+table_name
-                    time.sleep(4)
-                st.success('File uploaded and table created successfully!', icon = "🎉")
-                st.cache_data.clear()
-                st.session_state["tables_id"] = fetch_all_ids()
-                time.sleep(4)
-                st.rerun()
-
-            except Exception as e:
-                st.error(f"Error: {str(e)}")
-'''   
+  
 display_footer_section()

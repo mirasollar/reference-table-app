@@ -425,6 +425,7 @@ elif st.session_state['upload-tables']:
                         if table_name in existing_table_names:
                             st.error(f"Error: Table name '{table_name}' already exists in the selected bucket. Přeješ si pokračovat? Tabulka bude smazána a nahrazena tou tvojí!")
                             st.session_state.table_ready = False
+                            st.write(f"Existing table names: '{existing_table_names}'")
                             if st.button('Upload anyway'):
                                 table_id = 'out.c-MSO_ADHOC_dummy_data.aab_customer'
                                 client.tables.delete(table_id=table_id)
@@ -435,7 +436,7 @@ elif st.session_state['upload-tables']:
                             else:
                                 st.write("Čekání na potvrzení...")
                     
-'''
+
         if st.session_state.table_ready:
             # Save the uploaded file to a temporary path
             temp_file_path = f"/tmp/{uploaded_file.name}"
@@ -466,5 +467,5 @@ elif st.session_state['upload-tables']:
 
             except Exception as e:
                 st.error(f"Error: {str(e)}")
-'''              
+              
 display_footer_section()

@@ -404,14 +404,13 @@ elif st.session_state['upload-tables']:
 
         # if 'table_ready' not in st.session_state:
         #     st.session_state.table_ready = True
+        existing_tables = client.buckets.list_tables(bucket_id=selected_bucket)
+        existing_table_names = [table['name'] for table in existing_tables]
 
         # Upload button
         if st.button('Upload'):
             st.session_state.action_clicked = True
-            # Check if the table name already exists in the selected bucket
-            existing_tables = client.buckets.list_tables(bucket_id=selected_bucket)
-            existing_table_names = [table['name'] for table in existing_tables]
-
+                
         if st.session_state.action_clicked:
             if table_name in existing_table_names:
                 st.error(f"Error: Table name '{table_name}' already exists in the selected bucket. Přeješ si pokračovat? Tabulka bude smazána a nahrazena tou tvojí!")

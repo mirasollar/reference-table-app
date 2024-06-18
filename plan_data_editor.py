@@ -408,39 +408,31 @@ elif st.session_state['upload-tables']:
         # Upload button
         if st.button('Upload'):
             st.session_state.action_clicked = True
-            if bool(selected_bucket and uploaded_file and table_name) == False:
-                st.error('Error: Please select a bucket, upload a file, and enter a table name. Please check if you have permission to create a new bucket and table.')
-            else:
-                string_check = '^[\w-]*$'
-                # check a valid table name
-                if bool(re.match(string_check, table_name)) == False:
-                    st.error('Error: In a table name are allowed only alphanumeric characters, dashes, and underscores.')
-                else:
-                    # Check if the table name already exists in the selected bucket
-                    existing_tables = client.buckets.list_tables(bucket_id=selected_bucket)
-                    existing_table_names = [table['name'] for table in existing_tables]
+            # Check if the table name already exists in the selected bucket
+            existing_tables = client.buckets.list_tables(bucket_id=selected_bucket)
+            existing_table_names = [table['name'] for table in existing_tables]
 
-                    if st.session_state.action_clicked:
-                        if table_name in existing_table_names:
-                            st.error(f"Error: Table name '{table_name}' already exists in the selected bucket. Přeješ si pokračovat? Tabulka bude smazána a nahrazena tou tvojí!")
-                            # st.session_state.table_ready = False
-                            if st.button('Upload anyway'):
-                                table_id = 'out.c-MSO_ADHOC_dummy_data.aab_customer'
-                                client.tables.delete(table_id=table_id)
-                                st.write("Akce byla úspěšně potvrzena!")
-                                # Resetování stavu
-                                st.session_state.action_clicked = False
-                                # st.session_state.table_ready = True
-                                time.sleep(4)
-                                st.session_state['upload-tables'] = False
-                                st.session_state['selected-table'] = None
-                                time.sleep(4)
-                                st.cache_data.clear()
-                                st.session_state["tables_id"] = fetch_all_ids()
-                                time.sleep(4)
-                                st.rerun()
-                            else:
-                                st.write("Čekání na potvrzení...")
+        if st.session_state.action_clicked:
+            if table_name in existing_table_names:
+                st.error(f"Error: Table name '{table_name}' already exists in the selected bucket. Přeješ si pokračovat? Tabulka bude smazána a nahrazena tou tvojí!")
+                # st.session_state.table_ready = False
+                if st.button('Upload anyway'):
+                    table_id = 'out.c-MSO_ADHOC_dummy_data.aab_customer'
+                    client.tables.delete(table_id=table_id)
+                    st.write("Akce byla úspěšně potvrzena!")
+                    # Resetování stavu
+                    st.session_state.action_clicked = False
+                    # st.session_state.table_ready = True
+                    time.sleep(4)
+                    st.session_state['upload-tables'] = False
+                    st.session_state['selected-table'] = None
+                    time.sleep(4)
+                    st.cache_data.clear()
+                    st.session_state["tables_id"] = fetch_all_ids()
+                    time.sleep(4)
+                    st.rerun()
+                else:
+                    st.write("Čekání na potvrzení...")
                     
   
 display_footer_section()

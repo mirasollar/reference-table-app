@@ -420,10 +420,9 @@ elif st.session_state['upload-tables']:
                     existing_tables = client.buckets.list_tables(bucket_id=selected_bucket)
                     existing_table_names = [table['name'] for table in existing_tables]
                     # st.write(f"Existing table names: '{existing_table_names}'")
-                    table_name = 'aab_customer'
+                        
                     if st.session_state.action_clicked:
-                        # if table_name in existing_table_names:
-                        if table_name == 'aab_customer':
+                        if table_name in existing_table_names:
                             st.error(f"Error: Table name '{table_name}' already exists in the selected bucket. Přeješ si pokračovat? Tabulka bude smazána a nahrazena tou tvojí!")
                             st.session_state.table_ready = False
                             st.write(f"Existing table names: '{existing_table_names}'")
@@ -434,10 +433,18 @@ elif st.session_state['upload-tables']:
                                 # Resetování stavu
                                 st.session_state.action_clicked = False
                                 st.session_state.table_ready = True
+                                time.sleep(4)
+                                st.session_state['upload-tables'] = False
+                                st.session_state['selected-table'] = None
+                                time.sleep(4)
+                                st.cache_data.clear()
+                                st.session_state["tables_id"] = fetch_all_ids()
+                                time.sleep(4)
+                                st.rerun()
                             else:
                                 st.write("Čekání na potvrzení...")
                     
-
+'''
         if st.session_state.table_ready:
             # Save the uploaded file to a temporary path
             temp_file_path = f"/tmp/{uploaded_file.name}"
@@ -468,5 +475,5 @@ elif st.session_state['upload-tables']:
 
             except Exception as e:
                 st.error(f"Error: {str(e)}")
-              
+'''   
 display_footer_section()

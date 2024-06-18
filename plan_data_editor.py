@@ -400,10 +400,10 @@ elif st.session_state['upload-tables']:
         table_name = st.text_input("Enter table name")
 
         if 'action_clicked' not in st.session_state:
-        st.session_state.action_clicked = False
+            st.session_state.action_clicked = False
 
         if 'table_ready' not in st.session_state:
-        st.session_state.table_ready = True
+            st.session_state.table_ready = True
 
         # Upload button
         if st.button('Upload'):

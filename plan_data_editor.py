@@ -408,7 +408,7 @@ elif st.session_state['upload-tables']:
         # Upload button
         if st.button('Upload'):
             st.session_state.action_clicked = True
-            if bool(selected_bucket and uploaded_file and table_name) = False:
+            if bool(selected_bucket and uploaded_file and table_name) == False:
                 st.error('Error: Please select a bucket, upload a file, and enter a table name. Please check if you have permission to create a new bucket and table.')
             else:
                 string_check = '^[\w-]*$'

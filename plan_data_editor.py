@@ -425,6 +425,13 @@ elif st.session_state['upload-tables']:
                         # st.session_state.table_ready = True
                     else:
                         st.write("Čekání na potvrzení...")
+                        string_check = '^[\w-]*$'
+                        # check a valid table name
+                        if bool(re.match(string_check, table_name)) == False:
+                            st.error('Error: In a table name are allowed only alphanumeric characters, dashes, and underscores.')
+                        else:
+                            st.write("Můžeme pokračovat.")
+                        
             else:
                 st.error('Error: Please select a bucket, upload a file, and enter a table name. Please check if you have permission to create a new bucket and table.')
                     

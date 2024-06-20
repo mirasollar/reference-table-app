@@ -458,9 +458,6 @@ elif st.session_state['upload-tables']:
                             st.error(f"Error: {str(e)}")
                         
             else:
-                st.error('Error: Please upload a file and enter a table name.')
-    else:
-        st.error('Error: Please select a bucket.')
-    
+                st.error('Error: Please select a bucket, upload a file and enter a table name.')    
 
 display_footer_section()

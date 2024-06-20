@@ -410,8 +410,6 @@ elif st.session_state['upload-tables']:
                             st.write("Akce byla úspěšně potvrzena!")
                             # Resetování stavu
                             st.session_state.action_clicked = False
-                        else:
-                            st.write("Čekání na potvrzení...")
                             if st.session_state.action_clicked == False:
                                 # Save the uploaded file to a temporary path
                                 temp_file_path = f"/tmp/{uploaded_file.name}"
@@ -442,7 +440,10 @@ elif st.session_state['upload-tables']:
 
                                 except Exception as e:
                                     st.error(f"Error: {str(e)}")
-                        
+                        else:
+                            st.write("Čekání na potvrzení...")
+                    else:
+                        st.write("Přeskočeno!")
             else:
                 st.error('Error: Please select a bucket, upload a file and enter a table name.')    
 

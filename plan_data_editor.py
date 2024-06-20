@@ -375,7 +375,7 @@ elif st.session_state['upload-tables']:
     
     selected_bucket = st.selectbox('Choose a bucket', bucket_names, placeholder="Choose an option")
 
-    if selected_bucket and selected_bucket != "Choose an option":
+    if selected_bucket:
         # File uploader
         uploaded_file = st.file_uploader("Upload a file", type=['csv', 'xlsx'])
 
@@ -384,7 +384,7 @@ elif st.session_state['upload-tables']:
 
         # Upload button
         if st.button('Upload'):
-            if uploaded_file and table_name:
+            if selected_bucket != "Choose a bucket" and uploaded_file and table_name:
                 string_check = '^[a-zA-Z-_\d]*$'
                 # check a valid table name
                 if bool(re.match(string_check, table_name)) == False:

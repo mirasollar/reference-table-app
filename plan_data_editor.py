@@ -412,26 +412,24 @@ elif st.session_state['upload-tables']:
             st.session_state.action_clicked = True
                 
         if st.session_state.action_clicked:
-            if table_name in existing_table_names:
-                st.error(f"Error: Table name '{table_name}' already exists in the selected bucket. Přeješ si pokračovat? Tabulka bude smazána a nahrazena tou tvojí!")
-                # st.session_state.table_ready = False
-                if st.button('Upload anyway'):
-                    table_id = 'out.c-MSO_ADHOC_dummy_data.aab_customer'
-                    client.tables.delete(table_id=table_id)
-                    st.write("Akce byla úspěšně potvrzena!")
-                    # Resetování stavu
-                    st.session_state.action_clicked = False
-                    # st.session_state.table_ready = True
-                    time.sleep(4)
-                    st.session_state['upload-tables'] = False
-                    st.session_state['selected-table'] = None
-                    time.sleep(4)
-                    st.cache_data.clear()
-                    st.session_state["tables_id"] = fetch_all_ids()
-                    time.sleep(4)
-                    st.rerun()
-                else:
-                    st.write("Čekání na potvrzení...")
+            if selected_bucket and uploaded_file and table_name:
+                if table_name in existing_table_names:
+                    st.error(f"Error: Table name '{table_name}' already exists in the selected bucket. Přeješ si pokračovat? Tabulka bude smazána a nahrazena tou tvojí!")
+                    # st.session_state.table_ready = False
+                    if st.button('Upload anyway'):
+                        table_id = 'out.c-MSO_ADHOC_dummy_data.aab_customer'
+                        client.tables.delete(table_id=table_id)
+                        st.write("Akce byla úspěšně potvrzena!")
+                        # Resetování stavu
+                        st.session_state.action_clicked = False
+                        # st.session_state.table_ready = True
+                    else:
+                        st.write("Čekání na potvrzení...")
+            else:
+                st.error('Error: Please select a bucket, upload a file, and enter a table name. Please check if you have permission to create a new bucket and table.')
+                    
+                        
+        
                     
   
 display_footer_section()

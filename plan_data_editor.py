@@ -368,31 +368,14 @@ elif st.session_state['upload-tables']:
     st.title('Import Data into :blue[Keboola Storage]')
     # List and display available buckets
     buckets = client.buckets.list()
-    bucket_names = ["Create new bucket"]  # Add option to create a new bucket at the beginning
+    bucket_names = [bucket['id'] for bucket in buckets]
+    
+    bucket_names = ["Choose a bucket"]  # Add option to choose a bucket at the beginning
     bucket_names.extend([bucket['id'] for bucket in buckets])
     
-    selected_bucket = st.selectbox('Choose a bucket or create a new one', bucket_names, placeholder="Choose an option")
+    selected_bucket = st.selectbox('Choose a bucket', bucket_names, placeholder="Choose an option")
 
-    if selected_bucket == "Create new bucket":
-        new_bucket_name = st.text_input("Enter new bucket name")
-        create_bucket_button = st.button("Create Bucket")
-
-        if create_bucket_button and new_bucket_name:
-            # Check if the bucket name is original
-            new_bucket_id = f"out.c-{new_bucket_name}"
-            if new_bucket_id in bucket_names:
-                st.error(f"Error: Bucket name '{new_bucket_id}' already exists.")
-            else:
-                try:
-                    # Create new bucket
-                    client.buckets.create(new_bucket_id, new_bucket_name)
-                    st.success(f"Bucket '{new_bucket_id}' created successfully!")
-                    bucket_names.append(new_bucket_id)  # Update the list of buckets
-                    selected_bucket = new_bucket_id  # Set the newly created bucket as selected
-                except Exception as e:
-                    st.error(f"Error creating bucket: You don't have permission to create a new bucket. Please select one from the available options.")
-
-    elif selected_bucket and selected_bucket != "Choose an option":
+    if selected_bucket:
         # File uploader
         uploaded_file = st.file_uploader("Upload a file", type=['csv', 'xlsx'])
 
@@ -401,8 +384,8 @@ elif st.session_state['upload-tables']:
 
         # Upload button
         if st.button('Upload'):
-            if selected_bucket and uploaded_file and table_name:
-                string_check = '^[\w-]*$'
+            if selected_bucket != "Choose a bucket" and uploaded_file and table_name:
+                string_check = '^[a-zA-Z-_\d]*$'
                 # check a valid table name
                 if bool(re.match(string_check, table_name)) == False:
                     st.error('Error: In a table name are allowed only alphanumeric characters, dashes, and underscores.')
@@ -412,7 +395,37 @@ elif st.session_state['upload-tables']:
                     existing_table_names = [table['name'] for table in existing_tables]
 
                     if table_name in existing_table_names:
-                        st.error(f"Error: Table name '{table_name}' already exists in the selected bucket.")
+                        table_id = 'out.c-MSO_ADHOC_dummy_data.aab_customer'
+                        client.tables.delete(table_id=table_id)
+                        # Save the uploaded file to a temporary path
+                        temp_file_path = f"/tmp/{uploaded_file.name}"
+                        if Path(uploaded_file.name).suffix == '.csv':
+                            df=pd.read_csv(uploaded_file)
+                        else:
+                            df=pd.read_excel(uploaded_file)
+                        df.to_csv(temp_file_path, index=False)
+
+                        # Create the table in the selected bucket
+                        try:
+                            with st.spinner('Uploading...'):
+                                client.tables.create(
+                                name=table_name,
+                                bucket_id=selected_bucket,
+                                file_path=temp_file_path,
+                                primary_key=[]
+                                )
+                                st.session_state['upload-tables'] = False
+                                st.session_state['selected-table'] = None
+                                # st.session_state['selected-table'] = selected_bucket+"."+table_name
+                                time.sleep(4)
+                            st.success('File uploaded and table created successfully!', icon = "🎉")
+                            st.cache_data.clear()
+                            st.session_state["tables_id"] = fetch_all_ids()
+                            time.sleep(4)
+                            st.rerun()
+
+                        except Exception as e:
+                            st.error(f"Error: {str(e)}")
                     else:
                         # Save the uploaded file to a temporary path
                         temp_file_path = f"/tmp/{uploaded_file.name}"
@@ -443,7 +456,8 @@ elif st.session_state['upload-tables']:
 
                         except Exception as e:
                             st.error(f"Error: {str(e)}")
+                        
             else:
-                st.error('Error: Please select a bucket, upload a file, and enter a table name. Please check if you have permission to create a new bucket and table.')
+                st.error('Error: Please select a bucket, upload a file and enter a table name.')    
 
 display_footer_section()

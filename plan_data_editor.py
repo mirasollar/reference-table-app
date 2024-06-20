@@ -368,31 +368,11 @@ elif st.session_state['upload-tables']:
     st.title('Import Data into :blue[Keboola Storage]')
     # List and display available buckets
     buckets = client.buckets.list()
-    bucket_names = ["Create new bucket"]  # Add option to create a new bucket at the beginning
-    bucket_names.extend([bucket['id'] for bucket in buckets])
+    bucket_names = [bucket['id'] for bucket in buckets]
     
-    selected_bucket = st.selectbox('Choose a bucket or create a new one', bucket_names, placeholder="Choose an option")
+    selected_bucket = st.selectbox('Choose a bucket', bucket_names, placeholder="Choose an option")
 
-    if selected_bucket == "Create new bucket":
-        new_bucket_name = st.text_input("Enter new bucket name")
-        create_bucket_button = st.button("Create Bucket")
-
-        if create_bucket_button and new_bucket_name:
-            # Check if the bucket name is original
-            new_bucket_id = f"out.c-{new_bucket_name}"
-            if new_bucket_id in bucket_names:
-                st.error(f"Error: Bucket name '{new_bucket_id}' already exists.")
-            else:
-                try:
-                    # Create new bucket
-                    client.buckets.create(new_bucket_id, new_bucket_name)
-                    st.success(f"Bucket '{new_bucket_id}' created successfully!")
-                    bucket_names.append(new_bucket_id)  # Update the list of buckets
-                    selected_bucket = new_bucket_id  # Set the newly created bucket as selected
-                except Exception as e:
-                    st.error(f"Error creating bucket: You don't have permission to create a new bucket. Please select one from the available options.")
-
-    elif selected_bucket and selected_bucket != "Choose an option":
+    if selected_bucket:
         # File uploader
         uploaded_file = st.file_uploader("Upload a file", type=['csv', 'xlsx'])
 

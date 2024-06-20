@@ -382,8 +382,15 @@ elif st.session_state['upload-tables']:
         # Input for table name
         table_name = st.text_input("Enter table name")
 
+        # Hlavní tlačítko pro nějakou akci
+        if 'action_clicked' not in st.session_state:
+        st.session_state.action_clicked = False
+
         # Upload button
         if st.button('Upload'):
+            st.session_state.action_clicked = True
+
+        if st.session_state.action_clicked:
             if selected_bucket != "Choose a bucket" and uploaded_file and table_name:
                 string_check = '^[a-zA-Z-_\d]*$'
                 # check a valid table name
@@ -395,8 +402,16 @@ elif st.session_state['upload-tables']:
                     existing_table_names = [table['name'] for table in existing_tables]
 
                     if table_name in existing_table_names:
-                        table_id = 'out.c-MSO_ADHOC_dummy_data.aab_customer'
-                        client.tables.delete(table_id=table_id)
+                        st.error("Název tabulky je už použit. Přeješ si pokračovat? Tabulka bude smazána a nahrazena tou tvojí!")
+                        if st.button('Upload anyway'):
+                            table_id = 'out.c-MSO_ADHOC_dummy_data.aab_customer'
+                            client.tables.delete(table_id=table_id)
+                            st.write("Akce byla úspěšně potvrzena!")
+                            # Resetování stavu
+                            st.session_state.action_clicked = False
+                        else:
+                            st.write("Čekání na potvrzení...")
+                                
                         # Save the uploaded file to a temporary path
                         temp_file_path = f"/tmp/{uploaded_file.name}"
                         if Path(uploaded_file.name).suffix == '.csv':

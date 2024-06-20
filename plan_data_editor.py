@@ -384,7 +384,7 @@ elif st.session_state['upload-tables']:
 
         # Hlavní tlačítko pro nějakou akci
         if 'action_clicked' not in st.session_state:
-        st.session_state.action_clicked = False
+            st.session_state.action_clicked = False
 
         # Upload button
         if st.button('Upload'):

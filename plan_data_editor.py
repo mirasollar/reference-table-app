@@ -402,7 +402,7 @@ elif st.session_state['upload-tables']:
         # Upload button
         if st.button('Upload'):
             if selected_bucket and uploaded_file and table_name:
-                string_check = '^[a-zA-Z-_]*$'
+                string_check = '^[a-zA-Z-_ \d]*$'
                 # check a valid table name
                 if bool(re.match(string_check, table_name)) == False:
                     st.error('Error: In a table name are allowed only alphanumeric characters, dashes, and underscores.')

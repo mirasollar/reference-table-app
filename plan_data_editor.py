@@ -395,7 +395,8 @@ elif st.session_state['upload-tables']:
                     existing_table_names = [table['name'] for table in existing_tables]
 
                     if table_name in existing_table_names:
-                        table_id = 'out.c-MSO_ADHOC_dummy_data.aab_customer'
+                        # first delete table
+                        table_id = selected_bucket + '.' + table_name
                         client.tables.delete(table_id=table_id)
                         # Save the uploaded file to a temporary path
                         temp_file_path = f"/tmp/{uploaded_file.name}"

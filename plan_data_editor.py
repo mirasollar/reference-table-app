@@ -404,7 +404,8 @@ elif st.session_state['upload-tables']:
                     if table_name in existing_table_names:
                         st.error("Název tabulky je už použit. Přeješ si pokračovat? Tabulka bude smazána a nahrazena tou tvojí!")
                         if st.button('Upload anyway'):
-                            table_id = 'out.c-MSO_ADHOC_dummy_data.aab_customer'
+                            # first delete table
+                            table_id = selected_bucket + '.' + table_name
                             client.tables.delete(table_id=table_id)
                             st.write("Akce byla úspěšně potvrzena!")
                             # Resetování stavu

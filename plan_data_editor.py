@@ -441,7 +441,7 @@ elif st.session_state['upload-tables']:
                                 except Exception as e:
                                     st.error(f"Error: {str(e)}")
                         else:
-                            st.write("Čekání na potvrzení...")
+                            st.write("Waiting for a confirmation...")
                     else:
                         # Save the uploaded file to a temporary path
                         temp_file_path = f"/tmp/{uploaded_file.name}"

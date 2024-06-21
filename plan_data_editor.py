@@ -395,19 +395,19 @@ elif st.session_state['upload-tables']:
                 string_check = '^[a-zA-Z-_\d]*$'
                 # check a valid table name
                 if bool(re.match(string_check, table_name)) == False:
-                    st.error('Error: In a table name are allowed only alphanumeric characters, dashes, and underscores.')
+                    st.error('Error: In a table name are allowed only alphanumeric characters without diacritical marks, dashes, and underscores.')
                 else:
                     # Check if the table name already exists in the selected bucket
                     existing_tables = client.buckets.list_tables(bucket_id=selected_bucket)
                     existing_table_names = [table['name'] for table in existing_tables]
 
                     if table_name in existing_table_names:
-                        st.error("Název tabulky je už použit. Přeješ si pokračovat? Tabulka bude smazána a nahrazena tou tvojí!")
+                        st.error("The table name '{table_name}' is already used. Do you want to continue? The table will be deleted and replaced!")
                         if st.button('Upload anyway'):
                             # first delete table
                             table_id = selected_bucket + '.' + table_name
                             client.tables.delete(table_id=table_id)
-                            st.write("Akce byla úspěšně potvrzena!")
+                            st.success('The action has been confirmed successfully!', icon = "🎉")
                             # Resetování stavu
                             st.session_state.action_clicked = False
                             if st.session_state.action_clicked == False:

@@ -375,7 +375,7 @@ elif st.session_state['upload-tables']:
     
     selected_bucket = st.selectbox('Choose a bucket', bucket_names, placeholder="Choose an option")
 
-    if selected_bucket and selected_bucket != "Choose a bucket":
+    if selected_bucket and selected_bucket != "Choose an option":
         # File uploader
         uploaded_file = st.file_uploader("Upload a file", type=['csv', 'xlsx'])
 

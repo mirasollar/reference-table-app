@@ -402,7 +402,7 @@ elif st.session_state['upload-tables']:
                     existing_table_names = [table['name'] for table in existing_tables]
 
                     if table_name in existing_table_names:
-                        st.error("The table name '{table_name}' is already used. Do you want to continue? The table will be deleted and replaced!")
+                        st.error(f"The table name '{table_name}' is already used. Do you want to continue? The table will be deleted and replaced!")
                         if st.button('Upload anyway'):
                             # first delete table
                             table_id = selected_bucket + '.' + table_name

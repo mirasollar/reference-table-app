@@ -60,6 +60,7 @@ if st.button("Save Table"):
             password_input = st.text_input("Protected saving: enter password:", type="password")
             if st.button("Login and save data"):
                 st.session_state['user_name'] = get_username_by_password(password_input, st.session_state['passwords'])
+                st.write(f"User name: {st.session_state['user_name']}")
                 if st.session_state['user_name'] != None:
                     st.success(f"✅ Password is correct. Hi, {st.session_state['user_name']}. You are logged in!")
                     df_serialized = df.to_json(orient="records")

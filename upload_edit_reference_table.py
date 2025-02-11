@@ -6,6 +6,7 @@ import os
 import csv
 import pandas as pd
 import datetime
+from datetime import timezone as dttimezone
 import time
 from pathlib import Path
 import re
@@ -26,6 +27,12 @@ LOGO_IMAGE_PATH = os.path.abspath("./app/static/keboola.png")
 # Initialize Client
 client = Client(kbc_url, token)
 kbc_client = Client(kbc_url, kbc_token)
+
+try:
+    streamlit_protected_save = st.secrets["streamlit_protected_save"]
+except:
+    streamlit_protected_save = 'False'
+st.write(f"streamlit_protected_save: {streamlit_protected_save }")
 
 if 'data_load_time_table' not in st.session_state:
         st.session_state['data_load_time_table'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -414,10 +421,37 @@ def check_duplicates(df_to_check, cs_setting, pk_setting = []):
         df_to_check = df_to_check[pk_setting]
     duplicity_value = len(df_to_check.duplicated().unique().tolist())
     return duplicity_value
+
+# Protected save setting
+def get_now_utc():
+    now_utc = datetime.now(dttimezone.utc)
+    return now_utc.strftime('%Y-%m-%d, %H:%M:%S')
+
+def get_table_name_suffix():
+    headers = st.context.headers
+    return re.sub('-', '_', headers['Host'].split('.')[0])
+
+def get_password_dataframe(table_name):
+    kbc_client.tables.export_to_file(table_id = table_name, path_name='.')
+    return pd.read_csv(f"./{table_name.split('.')[2]}", low_memory=False)
+
+def get_username_by_password(password, df_passwords):
+    match = df_passwords.loc[df_passwords['password'] == password, 'name']
+    return match.iloc[0] if not match.empty else None
+
+def write_snapshot_to_keboola(df_to_write):
+    df_to_write.to_csv('snapshot_data.csv.gz', index=False, compression='gzip')
+    kbc_client.tables.load(
+        table_id=f"in.c-reference_tables_metadata.snapshots_{get_table_name_suffix()}",
+        file_path='snapshot_data.csv.gz',
+        is_incremental=True)
         
 # Display tables
 init()
 st.session_state["tables_id"] = fetch_all_ids()
+
+if "user_name" not in st.session_state:
+    st.session_state['user_name'] = None
 
 if st.session_state['selected-table'] is None and (st.session_state['upload-tables'] is None or st.session_state['upload-tables'] == False):
     #LOGO

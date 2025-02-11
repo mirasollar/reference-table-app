@@ -48,24 +48,24 @@ st.write(f"Dataframe s daty: {df}")
 if "user_name" not in st.session_state:
     st.session_state['user_name'] = None
 
-if streamlit_protected_save == 'True':
-    if st.session_state['user_name'] == None:
-        if "passwords" not in st.session_state:
-            st.session_state['passwords'] = get_password_dataframe(f"in.c-reference_tables_metadata.passwords_{get_table_name_suffix()}")
-        password_input = st.text_input("Enter password:", type="password")
-        if st.button("Login"):
-            st.session_state['user_name'] = get_username_by_password(password_input, st.session_state['passwords'])
-            if st.session_state['user_name'] != None:
-                st.success(f"✅ Password is correct. Hi, {st.session_state['user_name']}. You are logged in!")
-                st.rerun()
-            else:
-                st.error("Invalid password")
-    
-    if st.session_state['user_name'] != None:
-        st.success(f"✅ Hi, {st.session_state['user_name']}. You are logged in!")
-        if st.button("Save Table"):
-            df_serialized = df.to_json(orient="records")
-            df_snapshot = pd.DataFrame({"name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table": [df_serialized]})
-            st.write(df_snapshot)
-            write_snapshot_to_keboola(df_snapshot)
-            st.success("Table saved successfully!")
+if st.button("Save Table"):
+    if len(df) == 2:
+        st.write("Provádá se kontrola dat. Dataframe je ok.")
+    time.sleep(2)
+    if streamlit_protected_save == 'True':
+        if st.session_state['user_name'] == None:
+            if "passwords" not in st.session_state:
+                st.session_state['passwords'] = get_password_dataframe(f"in.c-reference_tables_metadata.passwords_{get_table_name_suffix()}")
+            password_input = st.text_input("Protected saving: enter password:", type="password")
+            if st.button("Login and save data"):
+                st.session_state['user_name'] = get_username_by_password(password_input, st.session_state['passwords'])
+                if st.session_state['user_name'] != None:
+                    st.success(f"✅ Password is correct. Hi, {st.session_state['user_name']}. You are logged in!")
+                    df_serialized = df.to_json(orient="records")
+                    df_snapshot = pd.DataFrame({"name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table": [df_serialized]})
+                    write_snapshot_to_keboola(df_snapshot)
+                    st.success("Table and snapshot saved successfully!")
+                    st.rerun()
+                else:
+                    st.error("Invalid password")
+    st.success("Table saved successfully!")

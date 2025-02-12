@@ -54,9 +54,9 @@ if "save_requested" not in st.session_state:
 
 # Tlačítko pro zahájení procesu uložení
 if st.button("Save Table"):
-    if len(df) == 2:
-        st.write("Provádá se kontrola dat. Dataframe je ok.")
-        time.sleep(2)
+    st.write("Provádá se kontrola dat. Dataframe je ok.")
+    time.sleep(2)
+    if len(df) != 2:
         st.error("❌ The table must have exactly 2 columns!")
     else:
         st.session_state.save_requested = True

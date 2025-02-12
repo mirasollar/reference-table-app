@@ -67,8 +67,7 @@ if st.button("Save Table"):
         st.session_state.save_requested = True
         st.rerun()
 
-# Pokud bylo kliknuto na "Save", ale uživatel není přihlášený, zobrazit login
-
+# Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
 if logged_user == 'True':
     if st.session_state.save_requested and st.session_state['user_name'] == None:
         if "passwords" not in st.session_state:
@@ -81,7 +80,7 @@ if logged_user == 'True':
             else:
                 st.error("Invalid password")
 else:
-    st.session_state['user_name'] = "Anonymous"
+    st.session_state['user_name'] = "Anonymous Squirrel"
 
 # Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, uložit ji
 if st.session_state['user_name'] != None and st.session_state.save_requested:

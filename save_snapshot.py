@@ -59,11 +59,12 @@ if "save_requested" not in st.session_state:
 
 # Tlačítko pro zahájení procesu uložení
 if st.button("Save Table"):
-    st.write("Provádá se kontrola dat. Dataframe je ok.")
+    st.write("Checking data...")
     time.sleep(2)
     if len(df) != 2:
         st.error("❌ The table must have exactly 2 columns!")
     else:
+        st.write("Data is OK.")
         st.session_state["save_requested"] = True
         st.rerun()
 
@@ -78,19 +79,20 @@ if logged_user == 'True':
             if st.session_state['user_name'] != None:
                 st.success(f"✅ Password is correct. Hi, {st.session_state['user_name']}. You are logged in!")
             else:
-                st.error("Invalid password")
+                st.error("Invalid password.")
 else:
     st.session_state['user_name'] = "Anonymous Squirrel"
 
 # Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, tak se uloží
 if st.session_state['user_name'] != None and st.session_state["save_requested"]:
-    st.write("Tabulka se ukládá...")
+    st.write("Table is saving...")
+    time.sleep(2)
+    st.write("Table saved successfully!")
     if saving_snapshot == "True":
+        st.write("Snapshot is saving...")
         df_serialized = df.to_json(orient="records")
         df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table": [df_serialized]})
         write_snapshot_to_keboola(df_snapshot)
-        st.success("Table and snapshot saved successfully!")
-    else:
-        st.write("Tabulka byla uložena.")
+        st.success("Snapshot saved successfully!")
     # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
     st.session_state["save_requested"] = False

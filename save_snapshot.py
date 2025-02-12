@@ -55,7 +55,7 @@ if "user_name" not in st.session_state:
     st.session_state['user_name'] = None
 
 if "save_requested" not in st.session_state:
-    st.session_state.save_requested = False
+    st.session_state["save_requested"] = False
 
 # Tlačítko pro zahájení procesu uložení
 if st.button("Save Table"):
@@ -64,12 +64,12 @@ if st.button("Save Table"):
     if len(df) != 2:
         st.error("❌ The table must have exactly 2 columns!")
     else:
-        st.session_state.save_requested = True
+        st.session_state["save_requested"] = True
         st.rerun()
 
 # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
 if logged_user == 'True':
-    if st.session_state.save_requested and st.session_state['user_name'] == None:
+    if st.session_state["save_requested"] and st.session_state['user_name'] == None:
         if "passwords" not in st.session_state:
             st.session_state['passwords'] = get_password_dataframe(f"in.c-reference_tables_metadata.passwords_{get_table_name_suffix()}")
         password_input = st.text_input("Protected saving: enter password:", type="password")
@@ -82,15 +82,15 @@ if logged_user == 'True':
 else:
     st.session_state['user_name'] = "Anonymous Squirrel"
 
-# Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, uložit ji
-if st.session_state['user_name'] != None and st.session_state.save_requested:
+# Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, tak se uloží
+if st.session_state['user_name'] != None and st.session_state["save_requested"]:
     st.write("Tabulka se ukládá...")
     if saving_snapshot == "True":
         df_serialized = df.to_json(orient="records")
-        df_snapshot = pd.DataFrame({"name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table": [df_serialized]})
+        df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table": [df_serialized]})
         write_snapshot_to_keboola(df_snapshot)
         st.success("Table and snapshot saved successfully!")
     else:
         st.write("Tabulka byla uložena.")
-    # Po uložení resetujeme stav save_requested, aby se neukládalo znovu
-    st.session_state.save_requested = False
+    # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
+    st.session_state["save_requested"] = False

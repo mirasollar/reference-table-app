@@ -832,12 +832,14 @@ elif st.session_state['upload-tables']:
                                 # st.session_state['selected-table'] = selected_bucket+"."+table_name
                                 
                             st.success('File uploaded and table updated successfully!', icon = "🎉")
-                                if saving_snapshot == "True":
-                                    with st.spinner('Saving snapshot...'):
-                                        df_serialized = df.to_json(orient="records")
-                                        df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table": [df_serialized]})
-                                        write_snapshot_to_keboola(df_snapshot)
-                                    st.success("Snapshot saved successfully!", icon = "🎉")
+                            if saving_snapshot == "True":
+                                with st.spinner('Saving snapshot...'):
+                                    df_serialized = df.to_json(orient="records")
+                                    df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table": [df_serialized]})
+                                    write_snapshot_to_keboola(df_snapshot)
+                                st.success("Snapshot saved successfully!", icon = "🎉")
+                        except Exception as e:
+                            st.error(f"Error: {str(e)}")
                         # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
                         st.session_state["save_requested"] = False
                         time.sleep(2)
@@ -848,8 +850,7 @@ elif st.session_state['upload-tables']:
                         time.sleep(2)
                         st.rerun()
 
-                    except Exception as e:
-                        st.error(f"Error: {str(e)}")
+
                 else:
                     st.error("It is not allowed to create new tables. You need to overwrite the existing one. If you want to create a new table, contact the analytics team.")
             else:

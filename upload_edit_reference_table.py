@@ -434,7 +434,7 @@ def check_duplicates(df_to_check, cs_setting, pk_setting = []):
 
 # Protected save setting
 def get_now_utc():
-    now_utc = datetime.now(dttimezone.utc)
+    now_utc = datetime.datetime.now(dttimezone.utc)
     return now_utc.strftime('%Y-%m-%d, %H:%M:%S')
 
 def get_table_name_suffix():

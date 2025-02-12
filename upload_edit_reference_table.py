@@ -29,10 +29,14 @@ client = Client(kbc_url, token)
 kbc_client = Client(kbc_url, kbc_token)
 
 try:
-    streamlit_protected_save = st.secrets["streamlit_protected_save"]
+    logged_user = st.secrets["logged_user"]
 except:
-    streamlit_protected_save = 'False'
-st.write(f"streamlit_protected_save: {streamlit_protected_save }")
+    logged_user = 'False'
+
+try:
+    saving_snapshot = st.secrets["saving_snapshot"]
+except:
+    saving_snapshot = 'False'
 
 if 'data_load_time_table' not in st.session_state:
         st.session_state['data_load_time_table'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -78,6 +82,12 @@ def init():
     
     if 'log-exists' not in st.session_state:
         st.session_state["log-exists"] = False
+
+    if "user_name" not in st.session_state:
+        st.session_state['user_name'] = None
+    
+    if "save_requested" not in st.session_state:
+        st.session_state["save_requested"] = False
 
     # if st.session_state["log-exists"] == False:
     #     try: 
@@ -450,9 +460,6 @@ def write_snapshot_to_keboola(df_to_write):
 init()
 st.session_state["tables_id"] = fetch_all_ids()
 
-if "user_name" not in st.session_state:
-    st.session_state['user_name'] = None
-
 if st.session_state['selected-table'] is None and (st.session_state['upload-tables'] is None or st.session_state['upload-tables'] == False):
     #LOGO
    
@@ -659,10 +666,39 @@ elif st.session_state['selected-table']is not None:
                 else:
                     st.session_state["data"] = edited_data
                 edited_data = modifying_nas(edited_data)
-                # is_incremental = bool(selected_row.get('primaryKey', False))   
-                write_to_keboola(edited_data, st.session_state["selected-table"],f'updated_data.csv.gz', False)
-                st.success('Data Updated!', icon = "🎉")
-                st.cache_data.clear()
+                st.session_state["save_requested"] = True
+                st.rerun()
+
+    # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
+    if logged_user == 'True':
+        if st.session_state["save_requested"] and st.session_state['user_name'] == None:
+            if "passwords" not in st.session_state:
+                st.session_state['passwords'] = get_password_dataframe(f"in.c-reference_tables_metadata.passwords_{get_table_name_suffix()}")
+            password_input = st.text_input("Protected saving: enter password:", type="password")
+            if st.button("Login and Save Data"):
+                st.session_state['user_name'] = get_username_by_password(password_input, st.session_state['passwords'])
+                if st.session_state['user_name'] != None:
+                    st.success(f"✅ Password is correct. Hi, {st.session_state['user_name']}. You are logged in!")
+                else:
+                    st.error("Invalid password")
+    else:
+        st.session_state['user_name'] = "Anonymous Squirrel"
+
+    # Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, tak se uloží
+    if st.session_state['user_name'] != None and st.session_state["save_requested"]:
+        st.write("Table is saving...")
+        # is_incremental = bool(selected_row.get('primaryKey', False))   
+        write_to_keboola(edited_data, st.session_state["selected-table"],f'updated_data.csv.gz', False)
+        st.success("Table saved successfully!", icon = "🎉")
+        if saving_snapshot == "True":
+            st.write("Snapshot is saving...")
+            df_serialized = edited_data.to_json(orient="records")
+            df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table": [df_serialized]})
+            write_snapshot_to_keboola(df_snapshot)
+            st.success("Snapshot saved successfully!", icon = "🎉")
+        # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
+        st.session_state["save_requested"] = False
+        st.cache_data.clear()
 
     ChangeButtonColour('Save Data', '#FFFFFF', '#1EC71E','#1EC71E')
 elif st.session_state['upload-tables']:

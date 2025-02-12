@@ -49,25 +49,38 @@ st.write(f"Dataframe s daty: {df}")
 if "user_name" not in st.session_state:
     st.session_state['user_name'] = None
 
+if "save_requested" not in st.session_state:
+    st.session_state.save_requested = False
+
+# Tlačítko pro zahájení procesu uložení
 if st.button("Save Table"):
     if len(df) == 2:
         st.write("Provádá se kontrola dat. Dataframe je ok.")
-    time.sleep(2)
-    if streamlit_protected_save == 'True':
-        if st.session_state['user_name'] == None:
-            if "passwords" not in st.session_state:
-                st.session_state['passwords'] = get_password_dataframe(f"in.c-reference_tables_metadata.passwords_{get_table_name_suffix()}")
-            password_input = st.text_input("Protected saving: enter password:", type="password")
-            if st.button("Login and save data"):
-                st.session_state['user_name'] = get_username_by_password(password_input, st.session_state['passwords'])
-                st.write(f"User name: {st.session_state['user_name']}")
-                if st.session_state['user_name'] != None:
-                    st.success(f"✅ Password is correct. Hi, {st.session_state['user_name']}. You are logged in!")
-                    df_serialized = df.to_json(orient="records")
-                    df_snapshot = pd.DataFrame({"name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table": [df_serialized]})
-                    write_snapshot_to_keboola(df_snapshot)
-                    st.success("Table and snapshot saved successfully!")
-                    st.rerun()
-                else:
-                    st.error("Invalid password")
-    st.success("Table saved successfully!")
+        time.sleep(2)
+        st.error("❌ The table must have exactly 2 columns!")
+    else:
+        st.session_state.save_requested = True
+        st.rerun()
+
+# Pokud bylo kliknuto na "Save", ale uživatel není přihlášený, zobrazit login
+
+if streamlit_protected_save == 'True':
+    if st.session_state.save_requested and st.session_state['user_name'] == None:
+        if "passwords" not in st.session_state:
+            st.session_state['passwords'] = get_password_dataframe(f"in.c-reference_tables_metadata.passwords_{get_table_name_suffix()}")
+        password_input = st.text_input("Protected saving: enter password:", type="password")
+        if st.button("Login and save data"):
+            st.session_state['user_name'] = get_username_by_password(password_input, st.session_state['passwords'])
+            if st.session_state['user_name'] != None:
+                st.success(f"✅ Password is correct. Hi, {st.session_state['user_name']}. You are logged in!")
+            else:
+                st.error("Invalid password")
+
+    # Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, uložit ji
+    if st.session_state['user_name'] != None and st.session_state.save_requested:
+        df_serialized = df.to_json(orient="records")
+        df_snapshot = pd.DataFrame({"name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table": [df_serialized]})
+        write_snapshot_to_keboola(df_snapshot)
+        st.success("Table and snapshot saved successfully!")
+        # Po uložení resetujeme stav save_requested, aby se neukládalo znovu
+        st.session_state.save_requested = False

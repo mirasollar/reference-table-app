@@ -5,7 +5,7 @@ import io
 import os
 import csv
 import time
-from datetime import datetime
+import datetime
 from datetime import timezone as dttimezone
 from kbcstorage.client import Client
 import numpy as np
@@ -26,7 +26,7 @@ except:
 
 
 def get_now_utc():
-    now_utc = datetime.now(dttimezone.utc)
+    now_utc = datetime.datetime.now(dttimezone.utc)
     return now_utc.strftime('%Y-%m-%d, %H:%M:%S')
 
 def get_table_name_suffix():

@@ -83,15 +83,15 @@ if logged_user == 'True':
 else:
     st.session_state['user_name'] = "Anonymous"
 
-    # Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, uložit ji
-    if st.session_state['user_name'] != None and st.session_state.save_requested:
-        st.write("Tabulka se ukládá...")
-        if saving_snapshot == "True":
-            df_serialized = df.to_json(orient="records")
-            df_snapshot = pd.DataFrame({"name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table": [df_serialized]})
-            write_snapshot_to_keboola(df_snapshot)
-            st.success("Table and snapshot saved successfully!")
-        else:
-            st.write("Tabulka byla uložena.")
-        # Po uložení resetujeme stav save_requested, aby se neukládalo znovu
-        st.session_state.save_requested = False
+# Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, uložit ji
+if st.session_state['user_name'] != None and st.session_state.save_requested:
+    st.write("Tabulka se ukládá...")
+    if saving_snapshot == "True":
+        df_serialized = df.to_json(orient="records")
+        df_snapshot = pd.DataFrame({"name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table": [df_serialized]})
+        write_snapshot_to_keboola(df_snapshot)
+        st.success("Table and snapshot saved successfully!")
+    else:
+        st.write("Tabulka byla uložena.")
+    # Po uložení resetujeme stav save_requested, aby se neukládalo znovu
+    st.session_state.save_requested = False

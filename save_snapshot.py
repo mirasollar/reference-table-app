@@ -15,10 +15,15 @@ kbc_token = st.secrets["kbc_token"]
 kbc_client = Client(kbc_url, kbc_token)
 
 try:
-    streamlit_protected_save = st.secrets["streamlit_protected_save"]
+    logged_user = st.secrets["logged_user"]
 except:
-    streamlit_protected_save = 'False'
-st.write(f"streamlit_protected_save: {streamlit_protected_save }")
+    logged_user = 'False'
+
+try:
+    saving_snapshot = st.secrets["saving_snapshot"]
+except:
+    saving_snapshot = 'False'
+
 
 def get_now_utc():
     now_utc = datetime.now(dttimezone.utc)
@@ -64,7 +69,7 @@ if st.button("Save Table"):
 
 # Pokud bylo kliknuto na "Save", ale uživatel není přihlášený, zobrazit login
 
-if streamlit_protected_save == 'True':
+if logged_user == 'True':
     if st.session_state.save_requested and st.session_state['user_name'] == None:
         if "passwords" not in st.session_state:
             st.session_state['passwords'] = get_password_dataframe(f"in.c-reference_tables_metadata.passwords_{get_table_name_suffix()}")
@@ -75,12 +80,18 @@ if streamlit_protected_save == 'True':
                 st.success(f"✅ Password is correct. Hi, {st.session_state['user_name']}. You are logged in!")
             else:
                 st.error("Invalid password")
+else:
+    st.session_state['user_name'] = "Anonymous"
 
     # Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, uložit ji
     if st.session_state['user_name'] != None and st.session_state.save_requested:
-        df_serialized = df.to_json(orient="records")
-        df_snapshot = pd.DataFrame({"name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table": [df_serialized]})
-        write_snapshot_to_keboola(df_snapshot)
-        st.success("Table and snapshot saved successfully!")
+        st.write("Tabulka se ukládá...")
+        if saving_snapshot == "True":
+            df_serialized = df.to_json(orient="records")
+            df_snapshot = pd.DataFrame({"name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table": [df_serialized]})
+            write_snapshot_to_keboola(df_snapshot)
+            st.success("Table and snapshot saved successfully!")
+        else:
+            st.write("Tabulka byla uložena.")
         # Po uložení resetujeme stav save_requested, aby se neukládalo znovu
         st.session_state.save_requested = False

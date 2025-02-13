@@ -793,6 +793,9 @@ elif st.session_state['upload-tables']:
                         st.session_state["save_requested"] = True
                         st.rerun()
 
+        else:
+            st.error('Error: Please upload a file and select a table name.') 
+
                         
         # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
         if logged_user == 'True':
@@ -838,11 +841,5 @@ elif st.session_state['upload-tables']:
             time.sleep(2)
             st.rerun()
 
-                                    
-
-                else:
-                    st.error("It is not allowed to create new tables. You need to overwrite the existing one. If you want to create a new table, contact the analytics team.")
-            else:
-                st.error('Error: Please upload a file and select a table name.') 
 
 display_footer_section()

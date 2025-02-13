@@ -801,7 +801,7 @@ elif st.session_state['upload-tables']:
         
         if st.session_state['user_name'] != None and st.session_state["save_requested"]:
             st.write("Table is saving...")
-            df.to_csv(temp_file_path, index=False)
+
             try:
                 with st.spinner('Uploading table...'):
                     client.tables.load(table_id=table_id, file_path=temp_file_path, is_incremental=False)

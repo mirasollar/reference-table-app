@@ -780,7 +780,8 @@ elif st.session_state['upload-tables']:
                         df = checking_date[1]
                     else:
                         df = modifying_nas(df)
-                    df.to_csv(temp_file_path, index=False)
+                    st.session_state['data'] = df
+                    st.session_state['data'].to_csv(temp_file_path, index=False)
                     time.sleep(2)
                     st.write(f"Table id: {table_id}")
                     st.write(f"Dataframe: {df.head()}")

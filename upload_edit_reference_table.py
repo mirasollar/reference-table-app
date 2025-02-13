@@ -781,7 +781,7 @@ elif st.session_state['upload-tables']:
                     else:
                         df = modifying_nas(df)
                     st.session_state['data'] = df
-                    st.session_state['data'].to_csv(temp_file_path, index=False)
+                    # st.session_state['data'].to_csv(temp_file_path, index=False)
                     time.sleep(4)
                     st.write(f"Table id: {table_id}")
                     st.write(f"Dataframe: {df.head()}")
@@ -809,7 +809,7 @@ elif st.session_state['upload-tables']:
             st.write("Table is saving...")
             try:
                 with st.spinner('Uploading table...'):
-                    client.tables.load(table_id=st.session_state["uploaded_table_id"], file_path=temp_file_path, is_incremental=False)
+                    client.tables.load(table_id=st.session_state["uploaded_table_id"], file_path='uploaded_data.csv.gz', is_incremental=False)
                     # st.session_state['selected-table'] = selected_bucket+"."+table_name
                     
                 st.success('File uploaded and table updated successfully!', icon = "🎉")

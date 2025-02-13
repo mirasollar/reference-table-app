@@ -783,23 +783,23 @@ elif st.session_state['upload-tables']:
                     st.session_state["save_requested"] = True
                     
                     st.write("Table is saving...")
-                        try:
-                            with st.spinner('Uploading table...'):
-                                client.tables.load(table_id=table_id, file_path=temp_file_path, is_incremental=False)
-                                # st.session_state['selected-table'] = selected_bucket+"."+table_name
-                                
-                            st.success('File uploaded and table updated successfully!', icon = "🎉")
-                        except Exception as e:
-                            st.error(f"Error: {str(e)}")
-                        # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
-                        st.session_state["save_requested"] = False
-                        time.sleep(2)
-                        st.session_state['upload-tables'] = False
-                        st.session_state['selected-table'] = None
-                        st.cache_data.clear()
-                        st.session_state["tables_id"] = fetch_all_ids()
-                        time.sleep(2)
-                        st.rerun()
+                    try:
+                        with st.spinner('Uploading table...'):
+                            client.tables.load(table_id=table_id, file_path=temp_file_path, is_incremental=False)
+                            # st.session_state['selected-table'] = selected_bucket+"."+table_name
+                            
+                        st.success('File uploaded and table updated successfully!', icon = "🎉")
+                    except Exception as e:
+                        st.error(f"Error: {str(e)}")
+                    # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
+                    st.session_state["save_requested"] = False
+                    time.sleep(2)
+                    st.session_state['upload-tables'] = False
+                    st.session_state['selected-table'] = None
+                    st.cache_data.clear()
+                    st.session_state["tables_id"] = fetch_all_ids()
+                    time.sleep(2)
+                    st.rerun()
 
 
 display_footer_section()

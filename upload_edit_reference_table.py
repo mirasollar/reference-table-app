@@ -782,25 +782,49 @@ elif st.session_state['upload-tables']:
                     st.write(f"Dataframe: {df.head()}")
                     time.sleep(2)
                     st.session_state["save_requested"] = True
+                    st.rerun()
+
+        # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
+        if logged_user == 'True':
+            if st.session_state["save_requested"] and st.session_state['user_name'] == None:
+                if "passwords" not in st.session_state:
+                    st.session_state['passwords'] = get_password_dataframe(f"in.c-reference_tables_metadata.passwords_{get_table_name_suffix()}")
+                password_input = st.text_input("Protected saving: enter password:", type="password")
+                if st.button("Login and save data"):
+                    st.session_state['user_name'] = get_username_by_password(password_input, st.session_state['passwords'])
+                    if st.session_state['user_name'] != None:
+                        st.success(f"✅ Password is correct. Hi, {st.session_state['user_name']}. You are logged in!")
+                    else:
+                        st.error("Invalid password.")
+        else:
+            st.session_state['user_name'] = "Anonymous Squirrel"
+    
+        # Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, tak se uloží
+        if st.session_state['user_name'] != None and st.session_state["save_requested"]:
+            st.write("Table is saving...")
+            try:
+                with st.spinner('Uploading table...'):
+                    client.tables.load(table_id=table_id, file_path=temp_file_path, is_incremental=False)
+                    # st.session_state['selected-table'] = selected_bucket+"."+table_name
                     
-                    st.write("Table is saving...")
-                    try:
-                        with st.spinner('Uploading table...'):
-                            client.tables.load(table_id=table_id, file_path=temp_file_path, is_incremental=False)
-                            # st.session_state['selected-table'] = selected_bucket+"."+table_name
-                            
-                        st.success('File uploaded and table updated successfully!', icon = "🎉")
-                    except Exception as e:
-                        st.error(f"Error: {str(e)}")
-                    # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
-                    st.session_state["save_requested"] = False
-                    time.sleep(2)
-                    st.session_state['upload-tables'] = False
-                    st.session_state['selected-table'] = None
-                    st.cache_data.clear()
-                    st.session_state["tables_id"] = fetch_all_ids()
-                    time.sleep(2)
-                    # st.rerun()
+                st.success('File uploaded and table updated successfully!', icon = "🎉")
+                if saving_snapshot == "True":
+                    with st.spinner('Saving snapshot...'):
+                        df_serialized = df.to_json(orient="records")
+                        df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table": [df_serialized]})
+                        write_snapshot_to_keboola(df_snapshot)
+                    st.success("Snapshot saved successfully!", icon = "🎉")
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
+            # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
+            st.session_state["save_requested"] = False
+            time.sleep(2)
+            st.session_state['upload-tables'] = False
+            st.session_state['selected-table'] = None
+            st.cache_data.clear()
+            st.session_state["tables_id"] = fetch_all_ids()
+            time.sleep(2)
+            # st.rerun()
 
 
 display_footer_section()

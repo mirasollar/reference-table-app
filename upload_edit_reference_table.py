@@ -70,6 +70,9 @@ def get_dataframe(table_name):
 def init():
     if 'selected-table' not in st.session_state:
         st.session_state['selected-table'] = None
+        
+    if "uploaded_table_id" not in st.session_state:
+        st.session_state["uploaded_table_id"] = ''
 
     if 'tables_id' not in st.session_state:
         st.session_state['tables_id'] = pd.DataFrame(columns=['table_id'])
@@ -730,6 +733,7 @@ elif st.session_state['upload-tables']:
                 st.error('Error: Please upload a file and select a table name.') 
             else:
                 table_id = selected_bucket + '.' + table_name
+                st.session_state["uploaded_table_id"] = table_id
                 column_setting = get_setting(token, selected_bucket, table_id)[0]
                 format_setting = split_dict(column_setting, 2)
                 null_cells_setting = split_dict(column_setting, 1)
@@ -804,7 +808,7 @@ elif st.session_state['upload-tables']:
             st.write("Table is saving...")
             try:
                 with st.spinner('Uploading table...'):
-                    client.tables.load(table_id=table_id, file_path=temp_file_path, is_incremental=False)
+                    client.tables.load(table_id=st.session_state["uploaded_table_id"], file_path=temp_file_path, is_incremental=False)
                     # st.session_state['selected-table'] = selected_bucket+"."+table_name
                     
                 st.success('File uploaded and table updated successfully!', icon = "🎉")

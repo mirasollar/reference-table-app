@@ -72,7 +72,7 @@ def init():
         st.session_state['selected-table'] = None
         
     if "uploaded_table_id" not in st.session_state:
-        st.session_state["uploaded_table_id"] = ''
+        st.session_state["uploaded_table_id"] = None
 
     if 'tables_id' not in st.session_state:
         st.session_state['tables_id'] = pd.DataFrame(columns=['table_id'])
@@ -816,7 +816,7 @@ elif st.session_state['upload-tables']:
                 if saving_snapshot == "True":
                     with st.spinner('Saving snapshot...'):
                         df_serialized = st.session_state['data'].to_json(orient="records")
-                        df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table": [df_serialized]})
+                        df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table_id": [st.session_state["uploaded_table_id"]], "table": [df_serialized]})
                         write_snapshot_to_keboola(df_snapshot)
                     st.success("Snapshot saved successfully!", icon = "🎉")
             except Exception as e:
@@ -826,6 +826,9 @@ elif st.session_state['upload-tables']:
             time.sleep(2)
             st.session_state['upload-tables'] = False
             st.session_state['selected-table'] = None
+            st.session_state["uploaded_table_id"] = None
+            st.session_state['data'] = None
+            
             st.cache_data.clear()
             st.session_state["tables_id"] = fetch_all_ids()
             time.sleep(2)

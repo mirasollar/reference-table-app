@@ -809,7 +809,8 @@ elif st.session_state['upload-tables']:
             st.write("Table is saving...")
             try:
                 with st.spinner('Uploading table...'):
-                    client.tables.load(table_id=st.session_state["uploaded_table_id"], file_path='uploaded_data.csv.gz', is_incremental=False)
+                    write_to_keboola(st.session_state['data'], st.session_state["uploaded_table_id"],'uploaded_data.csv.gz', False)
+                    # client.tables.load(table_id=st.session_state["uploaded_table_id"], file_path='uploaded_data.csv.gz', is_incremental=False)
                     # st.session_state['selected-table'] = selected_bucket+"."+table_name
                     
                 st.success('File uploaded and table updated successfully!', icon = "🎉")

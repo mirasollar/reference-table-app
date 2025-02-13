@@ -776,6 +776,8 @@ elif st.session_state['upload-tables']:
                         df = checking_date[1]
                     else:
                         df = modifying_nas(df)
+                    df.to_csv(temp_file_path, index=False)
+                    time.sleep(2)
                     st.write(f"Dataframe: {df.head()}")
                     st.session_state["save_requested"] = True
                     st.rerun()

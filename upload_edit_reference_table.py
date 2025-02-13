@@ -815,7 +815,7 @@ elif st.session_state['upload-tables']:
                 st.success('File uploaded and table updated successfully!', icon = "🎉")
                 if saving_snapshot == "True":
                     with st.spinner('Saving snapshot...'):
-                        df_serialized = df.to_json(orient="records")
+                        df_serialized = st.session_state['data'].to_json(orient="records")
                         df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table": [df_serialized]})
                         write_snapshot_to_keboola(df_snapshot)
                     st.success("Snapshot saved successfully!", icon = "🎉")

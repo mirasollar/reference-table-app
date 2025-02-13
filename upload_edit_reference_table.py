@@ -809,7 +809,7 @@ elif st.session_state['upload-tables']:
             st.write("Table is saving...")
             try:
                 with st.spinner('Uploading table...'):
-                    client.tables.load(table_id=st.session_state["uploaded_table_id"], file_path='/tmp/mso_dev_agency.csv', is_incremental=False)
+                    client.tables.load(table_id=st.session_state["uploaded_table_id"], file_path=temp_file_path, is_incremental=False)
                     # st.session_state['selected-table'] = selected_bucket+"."+table_name
                     
                 st.success('File uploaded and table updated successfully!', icon = "🎉")

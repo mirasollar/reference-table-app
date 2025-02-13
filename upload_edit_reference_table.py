@@ -776,12 +776,13 @@ elif st.session_state['upload-tables']:
                         df = checking_date[1]
                     else:
                         df = modifying_nas(df)
-                    df.to_csv(temp_file_path, index=False)
+                    # df.to_csv(temp_file_path, index=False)
                     time.sleep(2)
+                    st.write(f"Table id: {table_id}")
                     st.write(f"Dataframe: {df.head()}")
                     st.session_state["save_requested"] = True
                     st.rerun()
-                        
+'''                        
         # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
         if logged_user == 'True':
             if st.session_state["save_requested"] and st.session_state['user_name'] == None:
@@ -825,6 +826,6 @@ elif st.session_state['upload-tables']:
             st.session_state["tables_id"] = fetch_all_ids()
             time.sleep(2)
             st.rerun()
-
+'''
 
 display_footer_section()

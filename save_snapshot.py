@@ -10,9 +10,18 @@ from datetime import timezone as dttimezone
 from kbcstorage.client import Client
 import numpy as np
 
+import requests
+
+
 kbc_url = url = st.secrets["kbc_url"]
 kbc_token = st.secrets["kbc_token"]
 kbc_client = Client(kbc_url, kbc_token)
+
+res = requests.get("https://connection.eu-central-1.keboola.com/v2/storage/components/revolt-bi.ex-adform-dmp/configs/386007204",
+               headers={"X-StorageApi-Token":kbc_token})
+res_json = res.json()
+
+st.write(f"DMP: {res_json["configuration"]["parameters"]["#password"]}")
 
 try:
     logged_user = st.secrets["logged_user"]

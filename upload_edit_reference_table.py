@@ -805,8 +805,7 @@ elif st.session_state['upload-tables']:
                                     df = modifying_nas(df)
                                 st.session_state["save_requested"] = True
                                 st.rerun()
-                    else:
-                        st.write("Waiting for a confirmation...")
+
                         
                     # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
                     if logged_user == 'True':
@@ -851,6 +850,10 @@ elif st.session_state['upload-tables']:
                         st.session_state["tables_id"] = fetch_all_ids()
                         time.sleep(2)
                         st.rerun()
+
+                                    
+                    else:
+                        st.write("Waiting for a confirmation...")
 
 
                 else:

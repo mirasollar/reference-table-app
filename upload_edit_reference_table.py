@@ -782,10 +782,10 @@ elif st.session_state['upload-tables']:
                         df = modifying_nas(df)
                     st.session_state['data'] = df
                     st.session_state['data'].to_csv(temp_file_path, index=False)
-                    time.sleep(2)
+                    time.sleep(4)
                     st.write(f"Table id: {table_id}")
                     st.write(f"Dataframe: {df.head()}")
-                    time.sleep(2)
+                    time.sleep(4)
                     st.session_state["save_requested"] = True
                     st.rerun()
 
@@ -823,7 +823,7 @@ elif st.session_state['upload-tables']:
                 st.error(f"Error: {str(e)}")
             # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
             st.session_state["save_requested"] = False
-            time.sleep(2)
+            time.sleep(4)
             st.session_state['upload-tables'] = False
             st.session_state['selected-table'] = None
             st.session_state["uploaded_table_id"] = None

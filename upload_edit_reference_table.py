@@ -726,24 +726,16 @@ elif st.session_state['upload-tables']:
 
         # Upload button
         if st.button('Upload'):
-            if selected_bucket == "Choose a bucket" and not uploaded_file and table_name == "Choose a table":
+            if selected_bucket == "Choose a bucket" or not uploaded_file or table_name == "Choose a table":
                 st.error('Error: Please upload a file and select a table name.') 
             else:
                 table_id = selected_bucket + '.' + table_name
-                # show column formatting settings
                 column_setting = get_setting(token, selected_bucket, table_id)[0]
-                # st.write(f"Required column setting: {column_setting}")
                 format_setting = split_dict(column_setting, 2)
-                # st.write(f"Required column formatting: {format_setting}")
                 null_cells_setting = split_dict(column_setting, 1)
-                # st.write(f"Required not null cells setting: {null_cells_setting}")
                 case_sensitive_setting = get_setting(token, selected_bucket, table_id)[3]
-                # st.write(f"Required case sensitive setting: {case_sensitive_setting}")
                 primary_key_setting = get_setting(token, selected_bucket, table_id)[1]
-                # st.write(f"Required primary key setting: {primary_key_setting}")
                 date_setting = date_setting(column_setting)
-                # st.write(f"Required date setting: {date_setting}")
-                # Save the uploaded file to a temporary path
                 temp_file_path = f"/tmp/{uploaded_file.name}"
                 st.write(f"Temp file path: {temp_file_path}")
                 if Path(uploaded_file.name).suffix == '.csv':
@@ -762,7 +754,7 @@ elif st.session_state['upload-tables']:
                 missing_columns = check_columns_diff(get_setting(token, selected_bucket, table_id)[2], df.columns.values.tolist())[0]
                 extra_columns = check_columns_diff(get_setting(token, selected_bucket, table_id)[2], df.columns.values.tolist())[1]
 
-                # st.write(f"Columns in dataframe: {df.columns.values.tolist()}")
+                st.write(f"Columns in dataframe: {df.columns.values.tolist()}")
                 if missing_columns:
                     st.error(f"Some columns are missing in the file. Affected columns: {', '.join(missing_columns)}. The column names are case-sensitive. Please edit it before proceeding.")
                 elif extra_columns:
@@ -787,9 +779,6 @@ elif st.session_state['upload-tables']:
                     st.write(f"Dataframe: {df.head()}")
                     st.session_state["save_requested"] = True
                     st.rerun()
-
-                
-
                         
         # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
         if logged_user == 'True':

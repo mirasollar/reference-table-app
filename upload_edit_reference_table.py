@@ -776,10 +776,11 @@ elif st.session_state['upload-tables']:
                         df = checking_date[1]
                     else:
                         df = modifying_nas(df)
-                    # df.to_csv(temp_file_path, index=False)
+                    df.to_csv(temp_file_path, index=False)
                     time.sleep(2)
                     st.write(f"Table id: {table_id}")
                     st.write(f"Dataframe: {df.head()}")
+                    time.sleep(2)
                     st.session_state["save_requested"] = True
                     
                     st.write("Table is saving...")
@@ -799,7 +800,7 @@ elif st.session_state['upload-tables']:
                     st.cache_data.clear()
                     st.session_state["tables_id"] = fetch_all_ids()
                     time.sleep(2)
-                    st.rerun()
+                    # st.rerun()
 
 
 display_footer_section()

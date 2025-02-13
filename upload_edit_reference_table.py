@@ -829,7 +829,7 @@ elif st.session_state['upload-tables']:
             st.cache_data.clear()
             st.session_state["tables_id"] = fetch_all_ids()
             time.sleep(2)
-            # st.rerun()
+            st.rerun()
 
 
 display_footer_section()

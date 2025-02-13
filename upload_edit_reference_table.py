@@ -764,6 +764,7 @@ elif st.session_state['upload-tables']:
                         if st.session_state.action_clicked == False:
                             # Save the uploaded file to a temporary path
                             temp_file_path = f"/tmp/{uploaded_file.name}"
+                            st.write(f"Temp file path: {temp_file_path}")
                             if Path(uploaded_file.name).suffix == '.csv':
                                 file_content = uploaded_file.read()
                                 try:
@@ -823,6 +824,7 @@ elif st.session_state['upload-tables']:
                         st.session_state['user_name'] = "Anonymous Squirrel"
 
                     # Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, tak se uloží
+                    st.write(f"Dataframe: {df.head()}")
                     if st.session_state['user_name'] != None and st.session_state["save_requested"]:
                         st.write("Table is saving...")
                         df.to_csv(temp_file_path, index=False)

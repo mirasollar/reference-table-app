@@ -21,7 +21,7 @@ res = requests.get("https://connection.eu-central-1.keboola.com/v2/storage/compo
                headers={"X-StorageApi-Token":kbc_token})
 res_json = res.json()
 
-st.write(f"DMP: {res_json["configuration"]["parameters"]["#password"]}")
+st.write(f'DMP: {res_json["configuration"]["parameters"]["#password"]}')
 
 try:
     logged_user = st.secrets["logged_user"]

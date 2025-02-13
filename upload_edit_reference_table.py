@@ -726,75 +726,69 @@ elif st.session_state['upload-tables']:
 
         # Upload button
         if st.button('Upload'):
-            if selected_bucket != "Choose a bucket" and uploaded_file and table_name != "Choose a table":
-                # string_check = '^[a-zA-Z-_\d]*$'
-                # check a valid table name
-                # if bool(re.match(string_check, table_name)) == False:
-                #    st.error('Error: In a table name are allowed only alphanumeric characters without diacritical marks, dashes, and underscores.')
-                # Check if the table name already exists in the selected bucket
-                existing_tables = client.buckets.list_tables(bucket_id=selected_bucket)
-                existing_table_names = [table['name'] for table in existing_tables]
-                if table_name in existing_table_names:
-                    table_id = selected_bucket + '.' + table_name
-                    # show column formatting settings
-                    column_setting = get_setting(token, selected_bucket, table_id)[0]
-                    # st.write(f"Required column setting: {column_setting}")
-                    format_setting = split_dict(column_setting, 2)
-                    # st.write(f"Required column formatting: {format_setting}")
-                    null_cells_setting = split_dict(column_setting, 1)
-                    # st.write(f"Required not null cells setting: {null_cells_setting}")
-                    case_sensitive_setting = get_setting(token, selected_bucket, table_id)[3]
-                    # st.write(f"Required case sensitive setting: {case_sensitive_setting}")
-                    primary_key_setting = get_setting(token, selected_bucket, table_id)[1]
-                    # st.write(f"Required primary key setting: {primary_key_setting}")
-                    date_setting = date_setting(column_setting)
-                    # st.write(f"Required date setting: {date_setting}")
-                    # Save the uploaded file to a temporary path
-                    temp_file_path = f"/tmp/{uploaded_file.name}"
-                    st.write(f"Temp file path: {temp_file_path}")
-                    if Path(uploaded_file.name).suffix == '.csv':
-                        file_content = uploaded_file.read()
-                        try:
-                            df = pd.read_csv(io.BytesIO(file_content), sep=None, engine='python', encoding='utf-8-sig')
-                        except:
-                            result = from_bytes(file_content).best()
-                            detected_encoding = result.encoding
-                            df = pd.read_csv(io.BytesIO(file_content), sep=None, engine='python', encoding=detected_encoding)
-                    else:
-                        df=pd.read_excel(uploaded_file)
-                    if date_setting:
-                        checking_date = check_date_format(modifying_nas(df), date_setting)
-                
-                    missing_columns = check_columns_diff(get_setting(token, selected_bucket, table_id)[2], df.columns.values.tolist())[0]
-                    extra_columns = check_columns_diff(get_setting(token, selected_bucket, table_id)[2], df.columns.values.tolist())[1]
-
-                    # st.write(f"Columns in dataframe: {df.columns.values.tolist()}")
-                    if missing_columns:
-                        st.error(f"Some columns are missing in the file. Affected columns: {', '.join(missing_columns)}. The column names are case-sensitive. Please edit it before proceeding.")
-                    elif extra_columns:
-                        st.error(f"There are extra columns. Adding new columns is not allowed. Affected columns: {', '.join(extra_columns)}. The column names are case-sensitive. If you want to add new columns, please contact the analytics team.")
-                    elif check_null_rows(modifying_nas(df)):
-                        st.error("The file contains null rows. Please remove them before proceeding.")
-                    elif check_col_types(df, format_setting):
-                        st.error(f"The file contains data in the wrong format. Affected columns: {', '.join(check_col_types(df, format_setting))}. Please edit it before proceeding.")
-                    elif date_setting and checking_date[0]:
-                        st.error(f"The file contains date in the wrong format. Affected columns: {', '.join(checking_date[0])}. Please edit it before proceeding.")         
-                    elif check_null_cells(modifying_nas(df), null_cells_setting):
-                        st.error(f"The file contains data with null values. Affected columns: {', '.join(check_null_cells(modifying_nas(df), null_cells_setting))}. Please edit it before proceeding.")
-                    elif primary_key_setting and check_duplicates(df, case_sensitive_setting, primary_key_setting) == 2:
-                        st.error(f"The table contains columns with duplicate values. Affected columns: {', '.join(primary_key_setting)}. Please edit it before proceeding.")
-                    elif check_duplicates(df, case_sensitive_setting) == 2:
-                        st.error("The table contains duplicate rows. Please remove them before proceeding.")
-                    else:
-                        if date_setting:
-                            df = checking_date[1]
-                        else:
-                            df = modifying_nas(df)
-                        st.session_state["save_requested"] = True
-                        st.rerun()
-
-            else:
+            if selected_bucket == "Choose a bucket" and not uploaded_file and table_name == "Choose a table":
                 st.error('Error: Please upload a file and select a table name.') 
+            else:
+                table_id = selected_bucket + '.' + table_name
+                # show column formatting settings
+                column_setting = get_setting(token, selected_bucket, table_id)[0]
+                # st.write(f"Required column setting: {column_setting}")
+                format_setting = split_dict(column_setting, 2)
+                # st.write(f"Required column formatting: {format_setting}")
+                null_cells_setting = split_dict(column_setting, 1)
+                # st.write(f"Required not null cells setting: {null_cells_setting}")
+                case_sensitive_setting = get_setting(token, selected_bucket, table_id)[3]
+                # st.write(f"Required case sensitive setting: {case_sensitive_setting}")
+                primary_key_setting = get_setting(token, selected_bucket, table_id)[1]
+                # st.write(f"Required primary key setting: {primary_key_setting}")
+                date_setting = date_setting(column_setting)
+                # st.write(f"Required date setting: {date_setting}")
+                # Save the uploaded file to a temporary path
+                temp_file_path = f"/tmp/{uploaded_file.name}"
+                st.write(f"Temp file path: {temp_file_path}")
+                if Path(uploaded_file.name).suffix == '.csv':
+                    file_content = uploaded_file.read()
+                    try:
+                        df = pd.read_csv(io.BytesIO(file_content), sep=None, engine='python', encoding='utf-8-sig')
+                    except:
+                        result = from_bytes(file_content).best()
+                        detected_encoding = result.encoding
+                        df = pd.read_csv(io.BytesIO(file_content), sep=None, engine='python', encoding=detected_encoding)
+                else:
+                    df=pd.read_excel(uploaded_file)
+                if date_setting:
+                    checking_date = check_date_format(modifying_nas(df), date_setting)
+            
+                missing_columns = check_columns_diff(get_setting(token, selected_bucket, table_id)[2], df.columns.values.tolist())[0]
+                extra_columns = check_columns_diff(get_setting(token, selected_bucket, table_id)[2], df.columns.values.tolist())[1]
+
+                # st.write(f"Columns in dataframe: {df.columns.values.tolist()}")
+                if missing_columns:
+                    st.error(f"Some columns are missing in the file. Affected columns: {', '.join(missing_columns)}. The column names are case-sensitive. Please edit it before proceeding.")
+                elif extra_columns:
+                    st.error(f"There are extra columns. Adding new columns is not allowed. Affected columns: {', '.join(extra_columns)}. The column names are case-sensitive. If you want to add new columns, please contact the analytics team.")
+                elif check_null_rows(modifying_nas(df)):
+                    st.error("The file contains null rows. Please remove them before proceeding.")
+                elif check_col_types(df, format_setting):
+                    st.error(f"The file contains data in the wrong format. Affected columns: {', '.join(check_col_types(df, format_setting))}. Please edit it before proceeding.")
+                elif date_setting and checking_date[0]:
+                    st.error(f"The file contains date in the wrong format. Affected columns: {', '.join(checking_date[0])}. Please edit it before proceeding.")         
+                elif check_null_cells(modifying_nas(df), null_cells_setting):
+                    st.error(f"The file contains data with null values. Affected columns: {', '.join(check_null_cells(modifying_nas(df), null_cells_setting))}. Please edit it before proceeding.")
+                elif primary_key_setting and check_duplicates(df, case_sensitive_setting, primary_key_setting) == 2:
+                    st.error(f"The table contains columns with duplicate values. Affected columns: {', '.join(primary_key_setting)}. Please edit it before proceeding.")
+                elif check_duplicates(df, case_sensitive_setting) == 2:
+                    st.error("The table contains duplicate rows. Please remove them before proceeding.")
+                else:
+                    if date_setting:
+                        df = checking_date[1]
+                    else:
+                        df = modifying_nas(df)
+                    st.write(f"Dataframe: {df.head()}")
+                    st.session_state["save_requested"] = True
+                    st.rerun()
+
+                
 
                         
         # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
@@ -813,7 +807,7 @@ elif st.session_state['upload-tables']:
             st.session_state['user_name'] = "Anonymous Squirrel"
 
         # Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, tak se uloží
-        st.write(f"Dataframe: {df.head()}")
+        
         if st.session_state['user_name'] != None and st.session_state["save_requested"]:
             st.write("Table is saving...")
             df.to_csv(temp_file_path, index=False)

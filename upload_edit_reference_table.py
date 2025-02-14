@@ -714,7 +714,7 @@ elif st.session_state['upload-tables']:
     bucket_names = ["Choose a bucket"]  # Add option to choose a bucket at the beginning
     bucket_names.extend([bucket['id'] for bucket in buckets])
     if len(buckets) == 1:
-        selected_bucket = st.selectbox([bucket['id'] for bucket in buckets])
+        selected_bucket = st.selectbox('Bucket name', [bucket['id'] for bucket in buckets])
     else:
         selected_bucket = st.selectbox('Choose a bucket', bucket_names, placeholder="Choose an option")
 

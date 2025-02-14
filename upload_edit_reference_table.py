@@ -638,16 +638,18 @@ elif st.session_state['selected-table'] is not None:
 
     # Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, tak se uloží
     if st.session_state['user_name'] != None and st.session_state["save_requested"]:
-        with st.spinner('Uploading table...'): 
-            write_to_keboola(edited_data, st.session_state["selected-table"],'updated_data.csv.gz', "reference_table")
-            st.success("Table saved successfully!", icon = "🎉")
+        try:
+            with st.spinner('Saving table...'): 
+                write_to_keboola(edited_data, st.session_state["selected-table"],'updated_data.csv.gz', "reference_table")
+                st.success("Table saved successfully!", icon = "🎉")
             if saving_snapshot == "True":
-                with st.spinner('Uploading table...'):
+                with st.spinner('Saving snapshot...'):
                     df_serialized = edited_data.to_json(orient="records")
                     df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table_id": [st.session_state["selected-table"]], "data": [df_serialized]})
-                    # write_snapshot_to_keboola(df_snapshot)
                     write_to_keboola(df_snapshot, f"in.c-reference_tables_metadata.snapshots_{get_table_name_suffix()}",'snapshot_data.csv.gz', "snapshot")
                     st.success("Snapshot saved successfully!", icon = "🎉")
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
         # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
         st.session_state["save_requested"] = False
         st.cache_data.clear()
@@ -754,17 +756,14 @@ elif st.session_state['upload-tables']:
         if st.session_state['user_name'] != None and st.session_state["save_requested"]:
             try:
                 with st.spinner('Saving table...'):
-                    write_to_keboola(st.session_state['data'], st.session_state["uploaded_table_id"],'uploaded_data.csv.gz', "reference_table")
-                    # client.tables.load(table_id=st.session_state["uploaded_table_id"], file_path='uploaded_data.csv.gz', is_incremental=False)
-                    # st.session_state['selected-table'] = selected_bucket+"."+table_name
-                    
+                    write_to_keboola(st.session_state['data'], st.session_state["uploaded_table_id"],'uploaded_data.csv.gz', "reference_table") 
                 st.success('File uploaded and table saved successfully!', icon = "🎉")
                 if saving_snapshot == "True":
                     with st.spinner('Saving snapshot...'):
                         df_serialized = st.session_state['data'].to_json(orient="records")
                         df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table_id": [st.session_state["uploaded_table_id"]], "data": [df_serialized]})
                         write_to_keboola(df_snapshot, f"in.c-reference_tables_metadata.snapshots_{get_table_name_suffix()}",'snapshot_data.csv.gz', "snapshot")
-                    st.success("Snapshot saved successfully!", icon = "🎉")
+                        st.success("Snapshot saved successfully!", icon = "🎉")
             except Exception as e:
                 st.error(f"Error: {str(e)}")
             # Po uložení se resetuje stav save_requested, aby se neukládalo znovu

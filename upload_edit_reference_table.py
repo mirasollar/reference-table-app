@@ -718,7 +718,7 @@ elif st.session_state['upload-tables']:
     else:
         selected_bucket = st.selectbox('Choose a bucket', bucket_names, placeholder="Choose an option")
 
-    st.write(f"Len buckets: {len(bucket_names)}, Selected bucket: {selected_bucket}")
+    st.write(f"Len buckets: {len(bucket_names)}")
     if selected_bucket and selected_bucket != "Choose a bucket":
         # File uploader
         uploaded_file = st.file_uploader("Upload a file", type=['csv', 'xlsx'])
@@ -727,6 +727,7 @@ elif st.session_state['upload-tables']:
         tables = client.tables.list()
         table_names = ["Choose a table"]  # Add option to choose a table at the beginning
         table_names.extend([re.sub('.*\.', '', table["id"]) for table in tables if re.search(f"^{selected_bucket}\.", table["id"])])
+        st.write(f"Selected bucket: {selected_bucket}, Table names: {table_names}")
         table_name = st.selectbox('Choose a table', table_names, placeholder="Choose an option")
         # table_name = st.text_input("Enter table name")
 

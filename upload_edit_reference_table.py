@@ -613,11 +613,11 @@ elif st.session_state['selected-table'] is not None:
                 st.error("The table contains duplicate rows. Please remove them before proceeding.")
             else:                            
                 if date_setting:
-                    st.session_state['data'] = checking_date[1]
+                    # st.session_state['data'] = checking_date[1]
                     edited_data = modifying_nas(checking_date[1])
                 else:
-                    st.session_state['data'] = edited_data
-                edited_data = modifying_nas(edited_data)
+                    edited_data = modifying_nas(edited_data)
+                
                 st.session_state["save_requested"] = True
                 st.rerun()
 

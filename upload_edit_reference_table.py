@@ -577,8 +577,8 @@ elif st.session_state['selected-table'] is not None:
             mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
         
-    edited_data = st.data_editor(st.session_state["data"], num_rows="dynamic", height=500, use_container_width=True,
-                                 column_config=create_column_config(st.session_state["data"]))
+    edited_data = st.data_editor(st.session_state['data'], num_rows="dynamic", height=500, use_container_width=True,
+                                 column_config=create_column_config(st.session_state['data']))
 
     if st.button("Save Data", key="save-data-tables"):
         with st.spinner('Saving Data...'):
@@ -613,10 +613,10 @@ elif st.session_state['selected-table'] is not None:
                 st.error("The table contains duplicate rows. Please remove them before proceeding.")
             else:                            
                 if date_setting:
-                    st.session_state["data"] = checking_date[1]
+                    st.session_state['data'] = checking_date[1]
                     edited_data = modifying_nas(checking_date[1])
                 else:
-                    st.session_state["data"] = edited_data
+                    st.session_state['data'] = edited_data
                 edited_data = modifying_nas(edited_data)
                 st.session_state["save_requested"] = True
                 st.rerun()

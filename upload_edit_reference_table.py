@@ -677,7 +677,7 @@ elif st.session_state['selected-table'] is not None:
         if st.session_state["save_requested"] and st.session_state['user_name'] == None:
             if "passwords" not in st.session_state:
                 st.session_state['passwords'] = get_password_dataframe(f"in.c-reference_tables_metadata.passwords_{get_table_name_suffix()}")
-            password_input = st.text_input("Protected saving: enter password:", type="password")
+            password_input = st.text_input("Enter password:", type="password")
             if st.button("Login and Save Data"):
                 st.session_state['user_name'] = get_username_by_password(password_input, st.session_state['passwords'])
                 if st.session_state['user_name'] != None:
@@ -794,7 +794,7 @@ elif st.session_state['upload-tables']:
             if st.session_state["save_requested"] and st.session_state['user_name'] == None:
                 if "passwords" not in st.session_state:
                     st.session_state['passwords'] = get_password_dataframe(f"in.c-reference_tables_metadata.passwords_{get_table_name_suffix()}")
-                password_input = st.text_input("Protected saving: enter password:", type="password")
+                password_input = st.text_input("Enter password:", type="password")
                 if st.button("Login and save data"):
                     st.session_state['user_name'] = get_username_by_password(password_input, st.session_state['passwords'])
                     if st.session_state['user_name'] != None:

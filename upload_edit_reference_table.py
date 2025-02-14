@@ -82,31 +82,12 @@ def init():
 
     if 'upload-tables' not in st.session_state:
         st.session_state["upload-tables"] = False
-    
-    if 'log-exists' not in st.session_state:
-        st.session_state["log-exists"] = False
 
     if "user_name" not in st.session_state:
         st.session_state['user_name'] = None
     
     if "save_requested" not in st.session_state:
         st.session_state["save_requested"] = False
-
-    # if st.session_state["log-exists"] == False:
-    #     try: 
-    #         kbc_client.buckets.detail("in.c-keboolasheets")
-    #         print("Bucket exists")
-    #     except:
-    #         kbc_client.buckets.create("in.c-keboolasheets", "keboolasheets")
-    #         print("Bucket created")
-    #     try:
-    #         kbc_client.tables.detail("in.c-keboolasheets.log")
-    #         print("Table exists")
-    #         st.session_state["log-exists"] = True
-    #     except:
-    #         kbc_client.tables.create(name="log", bucket_id='in.c-keboolasheets', file_path=f'app/static/init_log.csv', primary_key=['table_id', 'log_time', 'user', 'new'])
-    #         print("Table created")
-    #         st.session_state["log-exists"] = True
 
 def update_session_state(table_id):
     with st.spinner('Loading ...'):
@@ -115,7 +96,6 @@ def update_session_state(table_id):
         st.session_state['data_load_time_table'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     st.rerun()
      
-
 def display_table_card(row):
     card(
         title=row["displayName"],
@@ -176,13 +156,6 @@ def ChangeButtonColour(widget_label, font_color, background_color, border_color)
 # Fetch and prepare table IDs and short description
 @st.cache_data(ttl=60)
 
-
-# def fetch_all_ids():
-#    all_tables = client.tables.list()
-#    ids_list = [{'table_id': table["id"], 'displayName': table["displayName"], 'primaryKey': ', '.join(table["primaryKey"]) if table["primaryKey"] else "",
-#                  'lastImportDate': table['lastImportDate'], 'rowsCount': table['rowsCount'], 'created': table['created']} for table in all_tables]
-#    return pd.DataFrame(ids_list)
-
 def fetch_all_ids():
     df = pd.DataFrame()
     bucket_ids = [bucket["id"] for bucket in client.buckets.list()]
@@ -210,7 +183,6 @@ def on_click_uploads():
 def on_click_back():
     st.session_state["upload-tables"] = False
 
-
 # Function to display a table section
 # table_name, table_id ,updated,created
 def display_table_section(row):
@@ -223,7 +195,6 @@ def display_table_section(row):
 
         display_table_card(row)
 
-
 def display_footer_section():
     left_aligned, space_col, right_aligned = st.columns((2,7,1))
     with left_aligned:
@@ -233,16 +204,12 @@ def display_footer_section():
 
 def write_to_keboola(data, table_name, table_path, purpose):
     """
-    Writes the provided data to the specified table in Keboola Connection,
-    updating existing records as needed.
+    Writes the provided data to the specified table in Keboola Connection, updating existing records as needed.
 
     Args:
         data (pandas.DataFrame): The data to write to the table.
         table_name (str): The name of the table to write the data to.
         table_path (str): The local file path to write the data to before uploading.
-
-    Returns:
-        None
     """
 
     # Write the DataFrame to a CSV file with compression
@@ -264,23 +231,7 @@ def write_to_keboola(data, table_name, table_path, purpose):
 
 def resetSetting():
     st.session_state['selected-table'] = None
-    st.session_state['data'] = None 
-
-def write_to_log(data):
-    now = datetime.datetime.now()
-    log_df = pd.DataFrame({
-            'table_id': "in.c-keboolasheets.log",
-            'new': [data],
-            'log_time': now,
-            'user': "PlaceHolderUserID"
-        })
-    log_df.to_csv(f'updated_data_log.csv.gz', index=False, compression='gzip')
-
-    # Load the CSV file into Keboola, updating existing records
-    kbc_client.tables.load(
-        table_id="in.c-keboolasheets.log",
-        file_path=f'updated_data_log.csv.gz',
-        is_incremental=True)
+    st.session_state['data'] = None
 
 def cast_columns(df):
     """Ensure that columns that should be boolean are explicitly cast to boolean."""
@@ -458,13 +409,6 @@ def get_password_dataframe(table_name):
 def get_username_by_password(password, df_passwords):
     match = df_passwords.loc[df_passwords['password'] == password, 'name']
     return match.iloc[0] if not match.empty else None
-
-def write_snapshot_to_keboola(df_to_write):
-    df_to_write.to_csv('snapshot_data.csv.gz', index=False, compression='gzip')
-    kbc_client.tables.load(
-        table_id=f"in.c-reference_tables_metadata.snapshots_{get_table_name_suffix()}",
-        file_path='snapshot_data.csv.gz',
-        is_incremental=True)
         
 # Display tables
 init()
@@ -472,7 +416,6 @@ st.session_state["tables_id"] = fetch_all_ids()
 
 if st.session_state['selected-table'] is None and (st.session_state['upload-tables'] is None or st.session_state['upload-tables'] == False):
     #LOGO
-   
       # Place an image in the first column
     col1, col2, col3 = st.columns((1,7,2))
     with col1:
@@ -558,7 +501,6 @@ elif st.session_state['selected-table'] is not None:
         st.session_state['selected-table'] = option
         st.session_state['data'] = get_dataframe(st.session_state['selected-table'])
        
-
     # Expander with info about table
     with st.expander("Table Info"):
          # Filter the DataFrame to find the row for the selected table_id
@@ -829,7 +771,6 @@ elif st.session_state['upload-tables']:
                     with st.spinner('Saving snapshot...'):
                         df_serialized = st.session_state['data'].to_json(orient="records")
                         df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table_id": [st.session_state["uploaded_table_id"]], "data": [df_serialized]})
-                        # write_snapshot_to_keboola(df_snapshot)
                         write_to_keboola(df_snapshot, f"in.c-reference_tables_metadata.snapshots_{get_table_name_suffix()}",'snapshot_data.csv.gz', "snapshot")
                     st.success("Snapshot saved successfully!", icon = "🎉")
             except Exception as e:

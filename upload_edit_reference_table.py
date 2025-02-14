@@ -638,17 +638,16 @@ elif st.session_state['selected-table'] is not None:
 
     # Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, tak se uloží
     if st.session_state['user_name'] != None and st.session_state["save_requested"]:
-        st.write("Table is saving...")
-        # is_incremental = bool(selected_row.get('primaryKey', False))   
-        write_to_keboola(edited_data, st.session_state["selected-table"],'updated_data.csv.gz', "reference_table")
-        st.success("Table saved successfully!", icon = "🎉")
-        if saving_snapshot == "True":
-            st.write("Snapshot is saving...")
-            df_serialized = edited_data.to_json(orient="records")
-            df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table_id": [st.session_state["selected-table"]], "data": [df_serialized]})
-            # write_snapshot_to_keboola(df_snapshot)
-            write_to_keboola(df_snapshot, f"in.c-reference_tables_metadata.snapshots_{get_table_name_suffix()}",'snapshot_data.csv.gz', "snapshot")
-            st.success("Snapshot saved successfully!", icon = "🎉")
+        with st.spinner('Uploading table...'): 
+            write_to_keboola(edited_data, st.session_state["selected-table"],'updated_data.csv.gz', "reference_table")
+            st.success("Table saved successfully!", icon = "🎉")
+            if saving_snapshot == "True":
+                with st.spinner('Uploading table...'):
+                    df_serialized = edited_data.to_json(orient="records")
+                    df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table_id": [st.session_state["selected-table"]], "data": [df_serialized]})
+                    # write_snapshot_to_keboola(df_snapshot)
+                    write_to_keboola(df_snapshot, f"in.c-reference_tables_metadata.snapshots_{get_table_name_suffix()}",'snapshot_data.csv.gz', "snapshot")
+                    st.success("Snapshot saved successfully!", icon = "🎉")
         # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
         st.session_state["save_requested"] = False
         st.cache_data.clear()
@@ -693,8 +692,6 @@ elif st.session_state['upload-tables']:
                 case_sensitive_setting = get_setting(token, selected_bucket, table_id)[3]
                 primary_key_setting = get_setting(token, selected_bucket, table_id)[1]
                 date_setting = date_setting(column_setting)
-                temp_file_path = f"/tmp/{uploaded_file.name}"
-                st.write(f"Temp file path: {temp_file_path}")
                 if Path(uploaded_file.name).suffix == '.csv':
                     file_content = uploaded_file.read()
                     try:
@@ -711,7 +708,6 @@ elif st.session_state['upload-tables']:
                 missing_columns = check_columns_diff(get_setting(token, selected_bucket, table_id)[2], df.columns.values.tolist())[0]
                 extra_columns = check_columns_diff(get_setting(token, selected_bucket, table_id)[2], df.columns.values.tolist())[1]
 
-                st.write(f"Columns in dataframe: {df.columns.values.tolist()}")
                 if missing_columns:
                     st.error(f"Some columns are missing in the file. Affected columns: {', '.join(missing_columns)}. The column names are case-sensitive. Please edit it before proceeding.")
                 elif extra_columns:
@@ -736,9 +732,6 @@ elif st.session_state['upload-tables']:
                     st.session_state['data'] = df
                     # st.session_state['data'].to_csv(temp_file_path, index=False)
                     time.sleep(4)
-                    st.write(f"Table id: {table_id}")
-                    st.write(f"Dataframe: {df.head()}")
-                    time.sleep(4)
                     st.session_state["save_requested"] = True
                     st.rerun()
 
@@ -759,14 +752,13 @@ elif st.session_state['upload-tables']:
     
         # Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, tak se uloží
         if st.session_state['user_name'] != None and st.session_state["save_requested"]:
-            st.write("Table is saving...")
             try:
-                with st.spinner('Uploading table...'):
+                with st.spinner('Saving table...'):
                     write_to_keboola(st.session_state['data'], st.session_state["uploaded_table_id"],'uploaded_data.csv.gz', "reference_table")
                     # client.tables.load(table_id=st.session_state["uploaded_table_id"], file_path='uploaded_data.csv.gz', is_incremental=False)
                     # st.session_state['selected-table'] = selected_bucket+"."+table_name
                     
-                st.success('File uploaded and table updated successfully!', icon = "🎉")
+                st.success('File uploaded and table saved successfully!', icon = "🎉")
                 if saving_snapshot == "True":
                     with st.spinner('Saving snapshot...'):
                         df_serialized = st.session_state['data'].to_json(orient="records")
@@ -777,12 +769,11 @@ elif st.session_state['upload-tables']:
                 st.error(f"Error: {str(e)}")
             # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
             st.session_state["save_requested"] = False
-            time.sleep(2)
             st.session_state['upload-tables'] = False
             st.session_state['selected-table'] = st.session_state["uploaded_table_id"]
             st.session_state["uploaded_table_id"] = None
             st.cache_data.clear()
-            st.session_state["tables_id"] = fetch_all_ids()
+            # st.session_state["tables_id"] = fetch_all_ids()
             time.sleep(2)
             st.rerun()
 

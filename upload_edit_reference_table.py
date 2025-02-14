@@ -702,6 +702,7 @@ elif st.session_state['selected-table'] is not None:
         # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
         st.session_state["save_requested"] = False
         st.cache_data.clear()
+        st.rerun()
 
     ChangeButtonColour('Save Data', '#FFFFFF', '#1EC71E','#1EC71E')
 elif st.session_state['upload-tables']:

@@ -231,7 +231,7 @@ def display_footer_section():
     # with right_aligned:
     #    st.caption("Version 2.0")
 
-def write_to_keboola(data, table_name, table_path, incremental):
+def write_to_keboola(data, table_name, table_path, purpose):
     """
     Writes the provided data to the specified table in Keboola Connection,
     updating existing records as needed.
@@ -249,11 +249,18 @@ def write_to_keboola(data, table_name, table_path, incremental):
     data.to_csv(table_path, index=False, compression='gzip')
 
     # Load the CSV file into Keboola, updating existing records
-    client.tables.load(
-        table_id=table_name,
-        file_path=table_path,
-        is_incremental=incremental
-    )
+    if purpose == "reference_table":
+        client.tables.load(
+            table_id=table_name,
+            file_path=table_path,
+            is_incremental=False
+        )
+    elif purpose == "snapshot":
+        kbc_client.tables.load(
+            table_id=table_name,
+            file_path=table_path,
+            is_incremental=True
+        )
 
 def resetSetting():
     st.session_state['selected-table'] = None
@@ -691,17 +698,19 @@ elif st.session_state['selected-table'] is not None:
     if st.session_state['user_name'] != None and st.session_state["save_requested"]:
         st.write("Table is saving...")
         # is_incremental = bool(selected_row.get('primaryKey', False))   
-        write_to_keboola(edited_data, st.session_state["selected-table"],'updated_data.csv.gz', False)
+        write_to_keboola(edited_data, st.session_state["selected-table"],'updated_data.csv.gz', "reference_table")
         st.success("Table saved successfully!", icon = "🎉")
         if saving_snapshot == "True":
             st.write("Snapshot is saving...")
             df_serialized = edited_data.to_json(orient="records")
             df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table_id": [st.session_state["selected-table"]], "data": [df_serialized]})
-            write_snapshot_to_keboola(df_snapshot)
+            # write_snapshot_to_keboola(df_snapshot)
+            write_to_keboola(df_snapshot, f"in.c-reference_tables_metadata.snapshots_{get_table_name_suffix()}",'snapshot_data.csv.gz', "snapshot")
             st.success("Snapshot saved successfully!", icon = "🎉")
         # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
         st.session_state["save_requested"] = False
         st.cache_data.clear()
+        time.sleep(2)
         st.rerun()
 
     ChangeButtonColour('Save Data', '#FFFFFF', '#1EC71E','#1EC71E')
@@ -811,7 +820,7 @@ elif st.session_state['upload-tables']:
             st.write("Table is saving...")
             try:
                 with st.spinner('Uploading table...'):
-                    write_to_keboola(st.session_state['data'], st.session_state["uploaded_table_id"],'uploaded_data.csv.gz', False)
+                    write_to_keboola(st.session_state['data'], st.session_state["uploaded_table_id"],'uploaded_data.csv.gz', "reference_table")
                     # client.tables.load(table_id=st.session_state["uploaded_table_id"], file_path='uploaded_data.csv.gz', is_incremental=False)
                     # st.session_state['selected-table'] = selected_bucket+"."+table_name
                     
@@ -820,7 +829,8 @@ elif st.session_state['upload-tables']:
                     with st.spinner('Saving snapshot...'):
                         df_serialized = st.session_state['data'].to_json(orient="records")
                         df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table_id": [st.session_state["uploaded_table_id"]], "data": [df_serialized]})
-                        write_snapshot_to_keboola(df_snapshot)
+                        # write_snapshot_to_keboola(df_snapshot)
+                        write_to_keboola(df_snapshot, f"in.c-reference_tables_metadata.snapshots_{get_table_name_suffix()}",'snapshot_data.csv.gz', "snapshot")
                     st.success("Snapshot saved successfully!", icon = "🎉")
             except Exception as e:
                 st.error(f"Error: {str(e)}")

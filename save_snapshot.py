@@ -92,7 +92,7 @@ if st.session_state['user_name'] != None and st.session_state["save_requested"]:
     if saving_snapshot == "True":
         st.write("Snapshot is saving...")
         df_serialized = df.to_json(orient="records")
-        df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table_id": [table_id], "table": [df_serialized]})
+        df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table_id": [table_id], "data": [df_serialized]})
         write_snapshot_to_keboola(df_snapshot)
         st.success("Snapshot saved successfully!", icon = "🎉")
     # Po uložení se resetuje stav save_requested, aby se neukládalo znovu

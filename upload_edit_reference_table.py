@@ -828,7 +828,6 @@ elif st.session_state['upload-tables']:
             st.session_state['upload-tables'] = False
             st.session_state['selected-table'] = st.session_state["uploaded_table_id"]
             st.session_state["uploaded_table_id"] = None
-            st.session_state['data'] = None
             st.cache_data.clear()
             st.session_state["tables_id"] = fetch_all_ids()
             time.sleep(2)

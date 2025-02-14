@@ -435,7 +435,7 @@ def check_duplicates(df_to_check, cs_setting, pk_setting = []):
     duplicity_value = len(df_to_check.duplicated().unique().tolist())
     return duplicity_value
 
-# Protected save setting
+# Protected saving & snapshoting
 def get_now_utc():
     now_utc = datetime.datetime.now(dttimezone.utc)
     return now_utc.strftime('%Y-%m-%d, %H:%M:%S')
@@ -527,7 +527,7 @@ if st.session_state['selected-table'] is None and (st.session_state['upload-tabl
         display_table_section(row)
         # row['displayName'], row['table_id'],row['lastImportDate'],row['created']
 
-elif st.session_state['selected-table']is not None:
+elif st.session_state['selected-table'] is not None:
     col1,col2,col4= st.columns((2,7,2))
     with col1:
         st.button(":gray[:arrow_left: Back to Tables]", on_click=resetSetting, type="secondary")
@@ -817,23 +817,21 @@ elif st.session_state['upload-tables']:
                 if saving_snapshot == "True":
                     with st.spinner('Saving snapshot...'):
                         df_serialized = st.session_state['data'].to_json(orient="records")
-                        df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table_id": [st.session_state["uploaded_table_id"]], "table": [df_serialized]})
+                        df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table_id": [st.session_state["uploaded_table_id"]], "data": [df_serialized]})
                         write_snapshot_to_keboola(df_snapshot)
                     st.success("Snapshot saved successfully!", icon = "🎉")
             except Exception as e:
                 st.error(f"Error: {str(e)}")
             # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
             st.session_state["save_requested"] = False
-            time.sleep(4)
+            time.sleep(2)
             st.session_state['upload-tables'] = False
             st.session_state['selected-table'] = None
             st.session_state["uploaded_table_id"] = None
             st.session_state['data'] = None
-            
             st.cache_data.clear()
             st.session_state["tables_id"] = fetch_all_ids()
             time.sleep(2)
             st.rerun()
-
 
 display_footer_section()

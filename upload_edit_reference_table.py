@@ -691,12 +691,12 @@ elif st.session_state['selected-table'] is not None:
     if st.session_state['user_name'] != None and st.session_state["save_requested"]:
         st.write("Table is saving...")
         # is_incremental = bool(selected_row.get('primaryKey', False))   
-        write_to_keboola(edited_data, st.session_state["selected-table"],f'updated_data.csv.gz', False)
+        write_to_keboola(edited_data, st.session_state["selected-table"],'updated_data.csv.gz', False)
         st.success("Table saved successfully!", icon = "🎉")
         if saving_snapshot == "True":
             st.write("Snapshot is saving...")
             df_serialized = edited_data.to_json(orient="records")
-            df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table": [df_serialized]})
+            df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table_id": [st.session_state["selected-table"]] "data": [df_serialized]})
             write_snapshot_to_keboola(df_snapshot)
             st.success("Snapshot saved successfully!", icon = "🎉")
         # Po uložení se resetuje stav save_requested, aby se neukládalo znovu

@@ -738,8 +738,8 @@ elif st.session_state['upload-tables']:
 
         # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
         if logged_user == 'True':
-            password_input = st.text_input("Enter password:", type="password")
             if st.session_state["save_requested"] and st.session_state['user_name'] == None:
+                password_input = st.text_input("Enter password:", type="password")
                 if "passwords" not in st.session_state:
                     st.session_state['passwords'] = get_password_dataframe(f"in.c-reference_tables_metadata.passwords_{get_table_name_suffix()}")
                 if st.button("Login and save data"):

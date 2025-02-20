@@ -408,12 +408,11 @@ def create_table_info(json_data):
             description = ', '.join(f"*{key}*: {value}" for key, value in json.loads(table_setting_str_dict).items())
             break
     # key (column name) if "case sensitive"
-    case_sensitive_columns = ''
+    case_sensitive_columns = []
     for column, metadata_list in json_data['columnMetadata'].items():
         for metadata in metadata_list:
             if metadata['value'] == 'case sensitive':
-                case_sensitive_columns = column
-                break
+                case_sensitive_columns.append(column)
     data = {
         'table_id': [table_id],
         'displayName': [display_name],

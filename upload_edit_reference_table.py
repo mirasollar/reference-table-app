@@ -99,9 +99,7 @@ def update_session_state(table_id):
 def display_table_card(row):
     card(
         title=row["displayName"],
-        # title=row["displayName"].upper(),  
-        # text=[f"Primary key: {row['primaryKey']}", f"Table ID: {row['table_id']}", f"Updated at: {row['lastImportDate']}", f"Created at: {row['created']}", f"Rows count: {str(row['rowsCount'])}"],
-        text=[f"Table ID: {row['table_id']}", f"Created at: {split_datetime(row['created'])}", f"Updated at: {split_datetime(row['lastImportDate'])}", f"Rows count: {str(row['rowsCount'])}"],
+        text=[f"Table ID: {row['table_id']}"],
         styles={
             "card": {
                 "width": "100%",
@@ -164,10 +162,10 @@ def fetch_all_ids():
         ids_list = [{
             'table_id': table["id"],
             'displayName': table["displayName"],
-            'primaryKey': ', '.join(table["primaryKey"]) if table["primaryKey"] else "",
-            'lastImportDate': table['lastImportDate'],
-            'rowsCount': table['rowsCount'],
-            'created': table['created']
+            # 'primaryKey': ', '.join(table["primaryKey"]) if table["primaryKey"] else "",
+            # 'lastImportDate': table['lastImportDate'],
+            # 'rowsCount': table['rowsCount'],
+            # 'created': table['created']
             # 'description': next((item['value'] for item in table["metadata"] if item['key'] == 'KBC.description'), None),
             # 'column_metadata': client.tables.detail(table["id"])["columnMetadata"]
         } for table in tables]

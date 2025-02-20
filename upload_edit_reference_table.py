@@ -103,7 +103,7 @@ def display_table_card(row):
         styles={
             "card": {
                 "width": "100%",
-                "height": "200px",
+                "height": "80px",
                 "box-shadow": "2px 2px 12px rgba(0,0,0,0.1)",
                 "margin": "0px",
                 "flex-direction": "column",  # Stack children vertically

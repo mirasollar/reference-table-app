@@ -167,9 +167,9 @@ def fetch_all_ids():
             'primaryKey': ', '.join(table["primaryKey"]) if table["primaryKey"] else "",
             'lastImportDate': table['lastImportDate'],
             'rowsCount': table['rowsCount'],
-            'created': table['created'],
-            'description': next((item['value'] for item in table["metadata"] if item['key'] == 'KBC.description'), None),
-            'column_metadata': client.tables.detail(table["id"])["columnMetadata"]
+            'created': table['created']
+            # 'description': next((item['value'] for item in table["metadata"] if item['key'] == 'KBC.description'), None),
+            # 'column_metadata': client.tables.detail(table["id"])["columnMetadata"]
         } for table in tables]
         df_stage = pd.DataFrame(ids_list)
         df = pd.concat([df, df_stage])

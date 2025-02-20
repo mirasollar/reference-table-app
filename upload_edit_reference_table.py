@@ -540,8 +540,9 @@ elif st.session_state['selected-table'] is not None:
         # Filter the DataFrame to find the row for the selected table_id
         table_detail_json = client.tables.detail(st.session_state['selected-table'])
         selected_row = create_table_info(table_detail_json)
+        st.write(selected_row)
         # selected_row = st.session_state["tables_id"][st.session_state["tables_id"]['table_id'] == st.session_state['selected-table']]
-
+'''
         # Ensure only one row is selected
         # Convert the row to a Series to facilitate access
         # selected_row = selected_row.iloc[0]
@@ -561,7 +562,7 @@ elif st.session_state['selected-table'] is not None:
         if case_sensitive_columns:
             st.markdown(f"**Case Sensitive Columns:** {', '.join(case_sensitive_columns)}")
         st.markdown(f"**Rows Count:** {selected_row['rowsCount']}")
-
+'''
     # Download table as CSV, TSV or Excel
     downloaded_data = cast_columns(st.session_state['data'])
     downloaded_data = delete_null_rows(modifying_nas(downloaded_data))

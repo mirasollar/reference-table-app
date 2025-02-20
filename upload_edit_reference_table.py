@@ -163,9 +163,9 @@ def fetch_all_ids():
             'table_id': table["id"],
             'displayName': table["displayName"],
             # 'primaryKey': ', '.join(table["primaryKey"]) if table["primaryKey"] else "",
-            # 'lastImportDate': table['lastImportDate'],
+            'lastImportDate': table['lastImportDate'],
             # 'rowsCount': table['rowsCount'],
-            # 'created': table['created']
+            'created': table['created']
             # 'description': next((item['value'] for item in table["metadata"] if item['key'] == 'KBC.description'), None),
             # 'column_metadata': client.tables.detail(table["id"])["columnMetadata"]
         } for table in tables]

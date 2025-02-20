@@ -393,6 +393,40 @@ def check_duplicates(df_to_check, cs_setting, pk_setting = []):
     duplicity_value = len(df_to_check.duplicated().unique().tolist())
     return duplicity_value
 
+def create_table_info(json_data):
+    table_id = json_data['id']
+    display_name = json_data['displayName']
+    primary_key = ', '.join(json_data['primaryKey'])
+    last_import_date = json_data['lastImportDate']
+    rows_count = json_data['rowsCount']
+    created = json_data['created']
+    # description - KBC.description
+    description = ''
+    for item in json_data['metadata']:
+        if item['key'] == 'KBC.description':         
+            table_setting_str_dict = re.sub("'", '"', re.sub(r'```.*', '', re.sub(r'.*Upload setting:?\s*```\{', '{', item['value'])))
+            description = ', '.join(f"*{key}*: {value}" for key, value in json.loads(table_setting_str_dict).items())
+            break
+    # key (column name) if "case sensitive"
+    case_sensitive_columns = ''
+    for column, metadata_list in json_data['columnMetadata'].items():
+        for metadata in metadata_list:
+            if metadata['value'] == 'case sensitive':
+                case_insensitive_columns = column
+                break
+    data = {
+        'table_id': [table_id],
+        'displayName': [display_name],
+        'primaryKey': [primary_key],
+        'lastImportDate': [last_import_date],
+        'rowsCount': [rows_count],
+        'created': [created],
+        'description': [description],
+        'case_sensitive_columns': [case_sensitive_columns]
+    }
+    df = pd.DataFrame(data)
+    return df
+
 # Protected saving & snapshoting
 def get_now_utc():
     now_utc = datetime.datetime.now(dttimezone.utc)
@@ -503,31 +537,30 @@ elif st.session_state['selected-table'] is not None:
        
     # Expander with info about table
     with st.expander("Table Info"):
-         # Filter the DataFrame to find the row for the selected table_id
-        selected_row = st.session_state["tables_id"][st.session_state["tables_id"]['table_id'] == st.session_state['selected-table']]
+        # Filter the DataFrame to find the row for the selected table_id
+        table_detail_json = client.tables.detail(st.session_state['selected-table'])
+        selected_row = create_table_info(table_detail_json)
+        # selected_row = st.session_state["tables_id"][st.session_state["tables_id"]['table_id'] == st.session_state['selected-table']]
 
         # Ensure only one row is selected
-        if len(selected_row) == 1:
-            # Convert the row to a Series to facilitate access
-            selected_row = selected_row.iloc[0]
-            # st.write(selected_row)
-            # Displaying data in bold using Markdown
-            st.markdown(f"**Table ID:** {selected_row['table_id']}")
-            # dt_created = selected_row['created']
-            # st.markdown(f"**Created:** {dt_created.split('T')[0]}, {dt_created.split('T')[1]}")
-            st.markdown(f"**Created at:** {split_datetime(selected_row['created'])}")
-            # st.markdown(f"**Updated:** {selected_row.get('lastImportDate', 'N/A')}")
-            st.markdown(f"**Updated at:** {split_datetime(selected_row['lastImportDate'])}")
-            st.markdown(f"**Primary Key:** {selected_row.get('primaryKey', 'N/A')}")
-            description = selected_row['description']
-            # table_setting_str_dict = re.sub(r'```.*', '', re.sub(r'.*Upload setting:?\s*```\{', '{', description))
-            table_setting_str_dict = re.sub("'", '"', re.sub(r'```.*', '', re.sub(r'.*Upload setting:?\s*```\{', '{', description)))
-            table_setting_str = ', '.join(f"*{key}*: {value}" for key, value in json.loads(table_setting_str_dict).items())
-            st.markdown(f"**Table Setting:** {table_setting_str}")
-            case_insensitive_columns = [outer_key for outer_key, items in selected_row['column_metadata'].items() if any(item.get('value') == 'case sensitive' for item in items)]
-            if case_insensitive_columns:
-                st.markdown(f"**Case Sensitive Columns:** {', '.join(case_insensitive_columns)}")
-            st.markdown(f"**Rows Count:** {selected_row['rowsCount']}")
+        # Convert the row to a Series to facilitate access
+        # selected_row = selected_row.iloc[0]
+        # st.write(selected_row)
+        # Displaying data in bold using Markdown
+        st.markdown(f"**Table ID:** {selected_row['table_id']}")
+        st.markdown(f"**Created at:** {split_datetime(selected_row['created'])}")
+        # st.markdown(f"**Updated:** {selected_row.get('lastImportDate', 'N/A')}")
+        st.markdown(f"**Updated at:** {split_datetime(selected_row['lastImportDate'])}")
+        st.markdown(f"**Primary Key:** {selected_row.get('primaryKey', 'N/A')}")
+        # table_setting_str_dict = re.sub(r'```.*', '', re.sub(r'.*Upload setting:?\s*```\{', '{', description))
+        # table_setting_str_dict = re.sub("'", '"', re.sub(r'```.*', '', re.sub(r'.*Upload setting:?\s*```\{', '{', description)))
+        # table_setting_str = ', '.join(f"*{key}*: {value}" for key, value in json.loads(table_setting_str_dict).items())
+        st.markdown(f"**Table Setting:** {selected_row['description']}")
+        # case_sensitive_columns = [outer_key for outer_key, items in selected_row['column_metadata'].items() if any(item.get('value') == 'case sensitive' for item in items)]
+        case_sensitive_columns = selected_row['case_sensitive_columns']
+        if case_sensitive_columns:
+            st.markdown(f"**Case Sensitive Columns:** {', '.join(case_sensitive_columns)}")
+        st.markdown(f"**Rows Count:** {selected_row['rowsCount']}")
 
     # Download table as CSV, TSV or Excel
     downloaded_data = cast_columns(st.session_state['data'])

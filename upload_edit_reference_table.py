@@ -547,7 +547,7 @@ elif st.session_state['selected-table'] is not None:
     downloaded_data = cast_columns(st.session_state['data'])
     downloaded_data = delete_null_rows(modifying_nas(downloaded_data))
     downloaded_data = delete_decimal_zero(downloaded_data)
-    downloaded_file_name = split_table_id(selected_row['table_id'])[1]
+    downloaded_file_name = split_table_id(st.session_state['selected-table'])[1]
         
     # Uložení dataframe do CSV v paměti
     csv_buffer = io.StringIO()

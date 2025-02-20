@@ -539,7 +539,6 @@ elif st.session_state['selected-table'] is not None:
         # Filter the DataFrame to find the row for the selected table_id
         table_detail_json = client.tables.detail(st.session_state['selected-table'])
         selected_row = create_table_info(table_detail_json)
-        st.write(selected_row)
         # selected_row = st.session_state["tables_id"][st.session_state["tables_id"]['table_id'] == st.session_state['selected-table']]
             # Ensure only one row is selected
         # Convert the row to a Series to facilitate access

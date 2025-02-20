@@ -537,22 +537,13 @@ elif st.session_state['selected-table'] is not None:
         # Filter the DataFrame to find the row for the selected table_id
         table_detail_json = client.tables.detail(st.session_state['selected-table'])
         selected_row = create_table_info(table_detail_json)
-        # selected_row = st.session_state["tables_id"][st.session_state["tables_id"]['table_id'] == st.session_state['selected-table']]
-            # Ensure only one row is selected
         # Convert the row to a Series to facilitate access
         selected_row = selected_row.iloc[0]
-        # st.write(selected_row)
-        # Displaying data in bold using Markdown
         st.markdown(f"**Table ID:** {selected_row['table_id']}")
         st.markdown(f"**Created at:** {split_datetime(selected_row['created'])}")
-        # st.markdown(f"**Updated:** {selected_row.get('lastImportDate', 'N/A')}")
         st.markdown(f"**Updated at:** {split_datetime(selected_row['lastImportDate'])}")
         st.markdown(f"**Primary Key:** {selected_row.get('primaryKey', 'N/A')}")
-        # table_setting_str_dict = re.sub(r'```.*', '', re.sub(r'.*Upload setting:?\s*```\{', '{', description))
-        # table_setting_str_dict = re.sub("'", '"', re.sub(r'```.*', '', re.sub(r'.*Upload setting:?\s*```\{', '{', description)))
-        # table_setting_str = ', '.join(f"*{key}*: {value}" for key, value in json.loads(table_setting_str_dict).items())
         st.markdown(f"**Table Setting:** {selected_row['description']}")
-        # case_sensitive_columns = [outer_key for outer_key, items in selected_row['column_metadata'].items() if any(item.get('value') == 'case sensitive' for item in items)]
         case_sensitive_columns = selected_row['case_sensitive_columns']
         if case_sensitive_columns:
             st.markdown(f"**Case Sensitive Columns:** {', '.join(case_sensitive_columns)}")
@@ -692,7 +683,6 @@ elif st.session_state['upload-tables']:
     st.title('Import Data into :blue[Keboola Storage]')
     # List and display available buckets
     buckets = client.buckets.list()
-    # bucket_names = [bucket['id'] for bucket in buckets]
     bucket_names = ["Choose a bucket"]  # Add option to choose a bucket at the beginning
     bucket_names.extend([bucket['id'] for bucket in buckets])
     if len(buckets) == 1:
@@ -708,7 +698,6 @@ elif st.session_state['upload-tables']:
         table_names = ["Choose a table"]  # Add option to choose a table at the beginning
         table_names.extend([re.sub('.*\.', '', table["id"]) for table in tables if re.search(f"^{selected_bucket}\.", table["id"])])
         table_name = st.selectbox('Choose a table', table_names, placeholder="Choose an option")
-        # table_name = st.text_input("Enter table name")
 
         # Upload button
         if st.button('Upload'):

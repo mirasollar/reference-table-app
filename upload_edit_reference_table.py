@@ -412,7 +412,7 @@ def create_table_info(json_data):
     for column, metadata_list in json_data['columnMetadata'].items():
         for metadata in metadata_list:
             if metadata['value'] == 'case sensitive':
-                case_insensitive_columns = column
+                case_sensitive_columns = column
                 break
     data = {
         'table_id': [table_id],

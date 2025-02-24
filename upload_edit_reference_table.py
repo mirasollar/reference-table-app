@@ -476,9 +476,7 @@ if st.session_state['selected-table'] is None and (st.session_state['upload-tabl
 
     with but_col1:
         if st.button("Reload Data", key="reload-tables", use_container_width = True, type="secondary"):
-            # st.session_state["tables_id"] = fetch_all_ids()
-            resetSetting()
-            st.rerun()
+            st.session_state["tables_id"] = fetch_all_ids()
             st.toast('Tables List Reloaded!', icon = "✅")
 
     with search_col:
@@ -524,7 +522,9 @@ elif st.session_state['selected-table'] is not None:
     st.info('After clicking the Save Data button, the data will be sent to Keboola Storage using a full load. If the data is not up-to-date, click on the Reload Data button. Data freshness is displayed in the right corner.', icon="ℹ️")
     # Reload Button
     if st.button("Reload Data", key="reload-table",use_container_width=True ):
-            st.session_state["tables_id"] = fetch_all_ids()
+            # st.session_state["tables_id"] = fetch_all_ids()
+            resetSetting()
+            st.rerun()
             st.toast('Tables List Reloaded!', icon = "✅")
 
     #Select Box

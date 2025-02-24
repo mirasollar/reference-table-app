@@ -70,6 +70,9 @@ def get_dataframe(table_name):
 def init():
     if 'selected-table' not in st.session_state:
         st.session_state['selected-table'] = None
+
+    if 'reloaded-table' not in st.session_state:
+        st.session_state['reloaded-table'] = None
         
     if "uploaded_table_id" not in st.session_state:
         st.session_state["uploaded_table_id"] = None
@@ -523,9 +526,10 @@ elif st.session_state['selected-table'] is not None:
     # Reload Button
     if st.button("Reload Data", key="reload-table",use_container_width=True ):
             # st.session_state["tables_id"] = fetch_all_ids()
+            st.session_state['reloaded-table'] = st.session_state['selected-table']
             resetSetting()
             # st.rerun()
-            update_session_state(st.session_state['selected-table'])
+            update_session_state(st.session_state['reloaded-table'])
             st.toast('Tables List Reloaded!', icon = "✅")
 
     #Select Box

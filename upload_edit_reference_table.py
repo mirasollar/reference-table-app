@@ -477,7 +477,8 @@ if st.session_state['selected-table'] is None and (st.session_state['upload-tabl
     with but_col1:
         if st.button("Reload Data", key="reload-tables", use_container_width = True, type="secondary"):
             # st.session_state["tables_id"] = fetch_all_ids()
-            st.session_state['selected-table'] = None
+            resetSetting()
+            st.rerun()
             st.toast('Tables List Reloaded!', icon = "✅")
 
     with search_col:

@@ -529,6 +529,7 @@ elif st.session_state['selected-table'] is not None:
             # st.session_state["tables_id"] = fetch_all_ids()
             st.session_state['data'] = st.session_state['original-table'].copy()
             st.toast('Tables List Reloaded!', icon = "✅")
+            st.rerun()
 
     #Select Box
     option = st.selectbox("Select Table", st.session_state["tables_id"], index=None, placeholder="Select table",label_visibility="collapsed")

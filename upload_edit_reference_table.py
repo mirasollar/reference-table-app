@@ -70,9 +70,6 @@ def get_dataframe(table_name):
 def init():
     if 'selected-table' not in st.session_state:
         st.session_state['selected-table'] = None
-
-    if 'original-data' not in st.session_state:
-        st.session_state['original-data'] = None
         
     if "uploaded_table_id" not in st.session_state:
         st.session_state["uploaded_table_id"] = None
@@ -95,9 +92,7 @@ def init():
 def update_session_state(table_id):
     with st.spinner('Loading ...'):
         st.session_state['selected-table'] = table_id
-        if st.session_state['original-data'] is None:
-            st.session_state['data'] = get_dataframe(st.session_state['selected-table'])
-            st.session_state['original-data'] = st.session_state['data'].copy()
+        st.session_state['data'] = get_dataframe(st.session_state['selected-table'])
         st.session_state['data_load_time_table'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     st.rerun()
      
@@ -528,10 +523,7 @@ elif st.session_state['selected-table'] is not None:
     # Reload Button
     if st.button("Reload Data", key="reload-table",use_container_width=True ):
             # st.session_state["tables_id"] = fetch_all_ids()
-            st.session_state['data'] = st.session_state['original-data'].copy()
             st.toast('Tables List Reloaded!', icon = "✅")
-            st.rerun()
-
     #Select Box
     option = st.selectbox("Select Table", st.session_state["tables_id"], index=None, placeholder="Select table",label_visibility="collapsed")
     

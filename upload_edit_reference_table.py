@@ -529,7 +529,7 @@ elif st.session_state['selected-table'] is not None:
     
     if option:
         st.session_state['selected-table'] = option
-        # st.session_state['data'] = get_dataframe(st.session_state['selected-table'])
+        st.session_state['data'] = get_dataframe(st.session_state['selected-table'])
        
     # Expander with info about table
     with st.expander("Table Info"):

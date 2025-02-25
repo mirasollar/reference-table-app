@@ -96,6 +96,7 @@ def update_session_state(table_id):
     with st.spinner('Loading ...'):
         st.session_state['selected-table'] = table_id
         st.session_state['data'] = get_dataframe(st.session_state['selected-table'])
+        st.session_state['original-table'] = st.session_state['data'].copy()
         st.session_state['data_load_time_table'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     st.rerun()
      
@@ -509,11 +510,8 @@ if st.session_state['selected-table'] is None and (st.session_state['upload-tabl
     # Looping through each row of the Tables ID
     for index, row in filtered_df.iterrows():
         display_table_section(row)
+        st.session_state['original-table'] = df.copy()
         # row['displayName'], row['table_id'],row['lastImportDate'],row['created']
-
-    if st.session_state['reloaded-table']:
-        update_session_state(st.session_state['reloaded-table'])
-        st.session_state['reloaded-table'] = None
 
 elif st.session_state['selected-table'] is not None:
     col1,col2,col4= st.columns((2,7,2))
@@ -530,10 +528,7 @@ elif st.session_state['selected-table'] is not None:
     # Reload Button
     if st.button("Reload Data", key="reload-table",use_container_width=True ):
             # st.session_state["tables_id"] = fetch_all_ids()
-            st.session_state['reloaded-table'] = st.session_state['selected-table']
-            resetSetting()
-            st.rerun()
-            
+            st.session_state['data'] = st.session_state['original-table'].copy()
             st.toast('Tables List Reloaded!', icon = "✅")
 
     #Select Box
@@ -541,7 +536,7 @@ elif st.session_state['selected-table'] is not None:
     
     if option:
         st.session_state['selected-table'] = option
-        st.session_state['data'] = get_dataframe(st.session_state['selected-table'])
+        # st.session_state['data'] = get_dataframe(st.session_state['selected-table'])
        
     # Expander with info about table
     with st.expander("Table Info"):

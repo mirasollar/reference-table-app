@@ -528,7 +528,7 @@ elif st.session_state['selected-table'] is not None:
             # st.session_state["tables_id"] = fetch_all_ids()
             st.session_state['reloaded-table'] = st.session_state['selected-table']
             resetSetting()
-            # st.rerun()
+            st.rerun()
             update_session_state(st.session_state['reloaded-table'])
             st.toast('Tables List Reloaded!', icon = "✅")
 

@@ -528,7 +528,7 @@ elif st.session_state['selected-table'] is not None:
     # Reload Button
     if st.button("Reload Data", key="reload-table",use_container_width=True ):
             # st.session_state["tables_id"] = fetch_all_ids()
-            st.session_state['data'] = st.session_state['original-table'].copy()
+            st.session_state['data'] = st.session_state['original-data'].copy()
             st.toast('Tables List Reloaded!', icon = "✅")
             st.rerun()
 

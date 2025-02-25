@@ -71,8 +71,8 @@ def init():
     if 'selected-table' not in st.session_state:
         st.session_state['selected-table'] = None
 
-    if 'reloaded-table' not in st.session_state:
-        st.session_state['reloaded-table'] = None
+    if 'original-table' not in st.session_state:
+        st.session_state['original-table'] = None
         
     if "uploaded_table_id" not in st.session_state:
         st.session_state["uploaded_table_id"] = None
@@ -510,7 +510,6 @@ if st.session_state['selected-table'] is None and (st.session_state['upload-tabl
     # Looping through each row of the Tables ID
     for index, row in filtered_df.iterrows():
         display_table_section(row)
-        st.session_state['original-table'] = df.copy()
         # row['displayName'], row['table_id'],row['lastImportDate'],row['created']
 
 elif st.session_state['selected-table'] is not None:

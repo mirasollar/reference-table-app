@@ -520,13 +520,9 @@ elif st.session_state['selected-table'] is not None:
   
     # Info
     st.info('After clicking the Save Data button, the data will be sent to Keboola Storage using a full load. If the data is not up-to-date, click on the Reload Data button. Data freshness is displayed in the right corner.', icon="ℹ️")
-    # Reload Button
-    # if st.button("Reload Data", key="reload-table",use_container_width=True ):
-            # st.session_state["tables_id"] = fetch_all_ids()
-            # st.toast('Tables List Reloaded!', icon = "✅")
+
     #Select Box
     option = st.selectbox("Select Table", st.session_state["tables_id"], index=None, placeholder="Select table",label_visibility="collapsed")
-    
     if option:
         st.session_state['selected-table'] = option
         st.session_state['data'] = get_dataframe(st.session_state['selected-table'])

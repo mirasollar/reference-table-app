@@ -523,6 +523,8 @@ elif st.session_state['selected-table'] is not None:
     # Reload Button
     if st.button("Reload Data", key="reload-table",use_container_width=True ):
             # st.session_state["tables_id"] = fetch_all_ids()
+            st.write("fSelected table: {st.session_state['selected-table']}")
+            st.session_state['data'] = get_dataframe(st.session_state['selected-table'])
             st.toast('Tables List Reloaded!', icon = "✅")
     #Select Box
     option = st.selectbox("Select Table", st.session_state["tables_id"], index=None, placeholder="Select table",label_visibility="collapsed")

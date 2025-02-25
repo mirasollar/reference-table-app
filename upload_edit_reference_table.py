@@ -511,6 +511,10 @@ if st.session_state['selected-table'] is None and (st.session_state['upload-tabl
         display_table_section(row)
         # row['displayName'], row['table_id'],row['lastImportDate'],row['created']
 
+    if st.session_state['reloaded-table']:
+        update_session_state(st.session_state['reloaded-table'])
+        st.session_state['reloaded-table'] = None
+
 elif st.session_state['selected-table'] is not None:
     col1,col2,col4= st.columns((2,7,2))
     with col1:
@@ -529,7 +533,7 @@ elif st.session_state['selected-table'] is not None:
             st.session_state['reloaded-table'] = st.session_state['selected-table']
             resetSetting()
             st.rerun()
-            update_session_state(st.session_state['reloaded-table'])
+            
             st.toast('Tables List Reloaded!', icon = "✅")
 
     #Select Box

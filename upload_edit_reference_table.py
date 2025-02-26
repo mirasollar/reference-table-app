@@ -741,9 +741,9 @@ elif st.session_state['upload-tables']:
                             st.session_state['data'] = checking_date[1]
                         else:
                             st.session_state['data'] = modifying_nas(df)
-                st.success("File uploaded and data checked successfully!", icon = "🎉")
-            st.session_state["save_requested"] = True
-            st.rerun()
+                    st.success("File uploaded and data checked successfully!", icon = "🎉")
+                    st.session_state["save_requested"] = True
+                    st.rerun()
 
         # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
         if logged_user == 'True':

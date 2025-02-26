@@ -759,7 +759,9 @@ elif st.session_state['upload-tables']:
                         st.error("Invalid password.")      
         else:
             st.session_state['user_name'] = "Anonymous Squirrel"
-    
+
+        st.write(f"Save requests: {st.session_state["save_requested"]}")
+        st.write(f"User name: {st.session_state['user_name']}")
         # Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, tak se uloží
         if st.session_state['user_name'] != None and st.session_state["save_requested"]:
             try:

@@ -573,19 +573,16 @@ elif st.session_state['selected-table'] is not None:
         downloaded_file_name = split_table_id(st.session_state['selected-table'])[1]
         col5, col6, col7 = st.columns([1, 1, 6])
         with col5:
-            if st.download_button(label="Download CSV", data="", file_name="dummy.csv"): 
-                data, mime, ext = generate_download_file(prepare_downloaded_data(), "csv")
-                st.download_button(label="Download CSV", data=data, file_name=f"{downloaded_file_name}.{ext}", mime=mime)
+            data, mime, ext = generate_download_file(prepare_downloaded_data(), "csv")
+            st.download_button(label="Download CSV", data=data, file_name=f"{downloaded_file_name}.{ext}", mime=mime)
     
         with col6:
-            if st.download_button(label="Download TSV", data="", file_name="dummy.txt"):
-                data, mime, ext = generate_download_file(prepare_downloaded_data(), "tsv")
-                st.download_button(label="Download TSV", data=data, file_name=f"{downloaded_file_name}.{ext}", mime=mime)
+            data, mime, ext = generate_download_file(prepare_downloaded_data(), "tsv")
+            st.download_button(label="Download TSV", data=data, file_name=f"{downloaded_file_name}.{ext}", mime=mime)
     
         with col7:
-            if st.download_button(label="Download XLSX", data="", file_name="dummy.xlsx"):
-                data, mime, ext = generate_download_file(prepare_downloaded_data(), "xlsx")
-                st.download_button(label="Download XLSX", data=data, file_name=f"{downloaded_file_name}.{ext}", mime=mime)
+            data, mime, ext = generate_download_file(prepare_downloaded_data(), "xlsx")
+            st.download_button(label="Download XLSX", data=data, file_name=f"{downloaded_file_name}.{ext}", mime=mime)
 
     
     edited_data = st.data_editor(st.session_state['data'], num_rows="dynamic", height=500, use_container_width=True,

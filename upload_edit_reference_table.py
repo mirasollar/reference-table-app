@@ -686,12 +686,13 @@ elif st.session_state['upload-tables']:
         table_names = ["Choose a table"]  # Add option to choose a table at the beginning
         table_names.extend([re.sub('.*\.', '', table["id"]) for table in tables if re.search(f"^{selected_bucket}\.", table["id"])])
         table_name = st.selectbox('Choose a table', table_names, placeholder="Choose an option")
-        st.write(f"selected_bucket: {selected_bucket}")
-        st.write(f"table_names: {table_names}")
+
 
         # Upload button
         if st.button('Upload'):
             with st.spinner('Uploading table and checking data...'):
+                st.write(f"selected_bucket: {selected_bucket}")
+                st.write(f"table_names: {table_names}")
                 if selected_bucket == "Choose a bucket" or not uploaded_file or table_name == "Choose a table":
                     st.error('Error: Please upload a file and select a table name.') 
                 else:

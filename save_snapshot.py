@@ -95,122 +95,11 @@ def update_session_state(table_id):
         st.session_state['data'] = get_dataframe(st.session_state['selected-table'])
         st.session_state['data_load_time_table'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     st.rerun()
-     
-def display_table_card(row):
-    card(
-        title=row["displayName"],
-        text=[f"Table ID: {row['table_id']}"],
-        styles={
-            "card": {
-                "width": "100%",
-                "height": "80px",
-                "box-shadow": "2px 2px 12px rgba(0,0,0,0.1)",
-                "margin": "0px",
-                "flex-direction": "column",  # Stack children vertically
-                "align-items": "flex-start",
-            },
-            "filter": {
-                "background-color": "#FFFFFF"
-            },
-        "div": {
-            "padding":"0px",
-            "display": "flex",
-            "align-items": "flex-start", 
-        },
-         "text": {
-                "color": "#999A9F",
-                "padding-left":"5%",
-                "align-self": "flex-start",
-                "font-size": "15px",
-                "font-weight": "lighter",
-            },
-         "title": {
-                "font-size": "24px",
-                "color": "#1F8FFF",
-                "padding-left":"5%",
-                "align-self": "flex-start",}
-        
-        },
-        image="https://upload.wikimedia.org/wikipedia/en/4/48/Blank.JPG" ,
-        key=row['table_id'],
-        on_click=lambda table_id=row['table_id']: update_session_state(table_id)
-    )
-
-def ChangeButtonColour(widget_label, font_color, background_color, border_color):
-    htmlstr = f"""
-        <script>
-            var elements = window.parent.document.querySelectorAll('button');
-            for (var i = 0; i < elements.length; ++i) {{ 
-                if (elements[i].innerText == '{widget_label}') {{ 
-                    elements[i].style.color ='{font_color}';
-                    elements[i].style.background = '{background_color}';
-                    elements[i].style.borderColor = '{border_color}';
-                }}
-            }}
-        </script>
-        """
-    components.html(f"{htmlstr}", height=0, width=0)
-
+    
 # Fetch and prepare table IDs and short description
 @st.cache_data(ttl=60)
 
-def fetch_all_ids():
-    df = pd.DataFrame()
-    bucket_ids = [bucket["id"] for bucket in client.buckets.list()]
-    all_tables_in_buckets = [client.buckets.list_tables(bucket_id) for bucket_id in bucket_ids]
-    for tables in all_tables_in_buckets:
-        ids_list = [{
-            'table_id': table["id"],
-            'displayName': table["displayName"],
-            # 'primaryKey': ', '.join(table["primaryKey"]) if table["primaryKey"] else "",
-            'lastImportDate': table['lastImportDate'],
-            # 'rowsCount': table['rowsCount'],
-            'created': table['created']
-            # 'description': next((item['value'] for item in table["metadata"] if item['key'] == 'KBC.description'), None),
-            # 'column_metadata': client.tables.detail(table["id"])["columnMetadata"]
-        } for table in tables]
-        df_stage = pd.DataFrame(ids_list)
-        df = pd.concat([df, df_stage])
-    return df
-
-# Definujte callback funkci pro tlačítko
-def on_click_uploads():
-    st.session_state["upload-tables"] = True
-
-# Definujte callback funkci pro tlačítko
-def on_click_back():
-    st.session_state["upload-tables"] = False
-
-# Function to display a table section
-# table_name, table_id ,updated,created
-def display_table_section(row):
-    with st.container():
-        # st.subheader(f":blue[{table_name}]")
-        # st.caption(table_id)
-        # st.caption(f"Created: {created}")
-        # st.caption(f"Updated: {updated}")
-        # st.markdown("""---""")
-
-        display_table_card(row)
-
-def display_footer_section():
-    left_aligned, space_col, right_aligned = st.columns((2,7,1))
-    with left_aligned:
-        st.caption(f"© Keboola & Seznam.cz {datetime.datetime.now().year}")
-    # with right_aligned:
-    #    st.caption("Version 2.0")
-
 def write_to_keboola(data, table_name, table_path, purpose):
-    """
-    Writes the provided data to the specified table in Keboola Connection, updating existing records as needed.
-
-    Args:
-        data (pandas.DataFrame): The data to write to the table.
-        table_name (str): The name of the table to write the data to.
-        table_path (str): The local file path to write the data to before uploading.
-    """
-
-    # Write the DataFrame to a CSV file with compression
     data.to_csv(table_path, index=False, compression='gzip')
 
     # Load the CSV file into Keboola, updating existing records
@@ -226,10 +115,6 @@ def write_to_keboola(data, table_name, table_path, purpose):
             file_path=table_path,
             is_incremental=True
         )
-
-def resetSetting():
-    st.session_state['selected-table'] = None
-    st.session_state['data'] = None
 
 def cast_columns(df):
     """Ensure that columns that should be boolean are explicitly cast to boolean."""
@@ -565,5 +450,3 @@ if st.session_state['user_name'] != None and st.session_state["save_requested"]:
     st.cache_data.clear()
     time.sleep(3)
     st.rerun()
-
-display_footer_section()

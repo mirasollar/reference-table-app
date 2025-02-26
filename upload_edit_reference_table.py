@@ -692,7 +692,7 @@ elif st.session_state['upload-tables']:
         if st.button('Upload'):
             with st.spinner('Uploading table and checking data...'):
                 st.write(f"selected_bucket: {selected_bucket}")
-                st.write(f"table_names: {table_names}")
+                st.write(f"table_name: {table_name}")
                 if selected_bucket == "Choose a bucket" or not uploaded_file or table_name == "Choose a table":
                     st.error('Error: Please upload a file and select a table name.') 
                 else:

@@ -1,6 +1,5 @@
 import streamlit as st
 import streamlit.components.v1 as components
-from streamlit_card import card
 from kbcstorage.client import Client
 import os
 import csv
@@ -215,56 +214,6 @@ def modifying_nas(df_for_editing):
     mod_df = df_for_editing.replace(r'^(\s*|None|none|NONE|NaN|nan|Null|null|NULL|n\/a|N\/A|<NA>)$', np.nan, regex=True)
     return mod_df
 
-def delete_decimal_zero(df_for_editing):
-    for k, v in df_for_editing.dtypes.astype(str).to_dict().items():
-        if re.search("(int|float).*", v):
-            # st.write(f"Column name: {k}, Format: {v}")
-            df_for_editing[k] = df_for_editing[k].astype(str)
-            df_for_editing[k] = df_for_editing[k].replace(r'\.0$', '', regex=True)
-    return df_for_editing
-
-def check_date_format(df_to_check, date_setting_dict):
-    col_names = df_to_check.columns.values.tolist()
-    col_names_to_check = list(set(col_names).intersection(list(date_setting_dict.keys())))
-    wrong_cols = []
-    for k, v in date_setting_dict.items():
-        for col_name in col_names_to_check:
-            if k == col_name:
-                try:
-                    df_to_check[col_name] = pd.to_datetime(df_to_check[col_name], format=v.split(",")[0])
-                    df_to_check[col_name] = df_to_check[col_name].dt.strftime(v.split(",")[0])
-                except:
-                    wrong_cols.append(k)
-    return wrong_cols, df_to_check
-
-def delete_null_rows(df_for_editing):
-    col_names = df_for_editing.columns.values.tolist()
-    # df_for_editing = df_for_editing.replace(r'^(\s*|None|none|NONE|NaN|nan|null|n\/a|N\/A)$', np.nan, regex=True)
-    df_for_editing.reset_index(drop=True, inplace=True)
-    bool_columns = []
-    for col in col_names:
-        if df_for_editing[col].dropna().isin([True, False]).all():
-            bool_columns.append(col)
-    df_without_bool = df_for_editing.drop(columns=bool_columns)
-    col_names_without_bool = df_without_bool.columns.values.tolist()
-    all_col_null_check = df_without_bool[col_names_without_bool].isnull().apply(lambda x: all(x), axis=1)
-    all_col_null_check_lst = all_col_null_check.tolist()
-    for i in range(len(all_col_null_check_lst)):
-        item = all_col_null_check_lst[i]
-        if item == True:
-            df_for_editing = df_for_editing.drop([i, i])
-    return df_for_editing
-
-def check_null_cells(df_to_check, col_setting):
-    # df_to_check = df_to_check.replace(r'^(\s*|None|none|NaN|nan|null|n\/a|N\/A)$', np.nan, regex=True)
-    df_to_check = df_to_check.astype(str)
-    wrong_cols = []
-    col_names = df_to_check.columns.values.tolist()
-    col_names_to_check = list(set(col_names).intersection(list(col_setting.keys())))
-    for i in col_names_to_check:
-        if [x for x in df_to_check[i].tolist() if re.search("^(nan|None|<NA>)$", x)]:
-            wrong_cols.append(i)
-    return wrong_cols
 
 def check_duplicates(df_to_check, cs_setting, pk_setting = []):
     df_to_check = df_to_check.astype(str)
@@ -276,63 +225,6 @@ def check_duplicates(df_to_check, cs_setting, pk_setting = []):
     duplicity_value = len(df_to_check.duplicated().unique().tolist())
     return duplicity_value
 
-def create_table_info(json_data):
-    table_id = json_data['id']
-    display_name = json_data['displayName']
-    primary_key = ', '.join(json_data['primaryKey'])
-    last_import_date = json_data['lastImportDate']
-    rows_count = json_data['rowsCount']
-    created = json_data['created']
-    # description - KBC.description
-    description = ''
-    for item in json_data['metadata']:
-        if item['key'] == 'KBC.description':         
-            table_setting_str_dict = re.sub("'", '"', re.sub(r'```.*', '', re.sub(r'.*Upload setting:?\s*```\{', '{', item['value'])))
-            description = ', '.join(f"*{key}*: {value}" for key, value in json.loads(table_setting_str_dict).items())
-            break
-    # key (column name) if "case sensitive"
-    case_sensitive_columns = []
-    for column, metadata_list in json_data['columnMetadata'].items():
-        for metadata in metadata_list:
-            if metadata['value'] == 'case sensitive':
-                case_sensitive_columns.append(column)
-    data = {
-        'table_id': [table_id],
-        'displayName': [display_name],
-        'primaryKey': [primary_key],
-        'lastImportDate': [last_import_date],
-        'rowsCount': [rows_count],
-        'created': [created],
-        'description': [description],
-        'case_sensitive_columns': [case_sensitive_columns]
-    }
-    df = pd.DataFrame(data)
-    return df
-
-def prepare_downloaded_data():
-    downloaded_data = cast_columns(st.session_state['data'])
-    downloaded_data = delete_null_rows(modifying_nas(downloaded_data))
-    downloaded_data = delete_decimal_zero(downloaded_data)
-    return downloaded_data
-
-def generate_download_file(data, file_format):
-    buffer = io.BytesIO() if file_format == "xlsx" else io.StringIO()
-    if file_format == "csv":
-        data.to_csv(buffer, index=False)
-        mime = 'text/csv'
-        ext = "csv"
-    elif file_format == "tsv":
-        data.to_csv(buffer, sep='\t', index=False)
-        mime = 'text/tab-separated-values'
-        ext = "txt"
-    elif file_format == "xlsx":
-        with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-            data.to_excel(writer, index=False)
-        mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        ext = "xlsx"
-    else:
-        return None, None, None
-    return buffer.getvalue(), mime, ext
     
 # Protected saving & snapshoting
 def get_now_utc():
@@ -353,7 +245,6 @@ def get_username_by_password(password, df_passwords):
         
 # Display tables
 init()
-st.session_state["tables_id"] = fetch_all_ids()
 
 selected_bucket = "in.c-mso_dev_reference_tables"
 uploaded_file = st.file_uploader("Upload a file", type=['csv', 'xlsx'])

@@ -271,6 +271,7 @@ if st.button('Upload'):
                 df = pd.read_csv(io.BytesIO(file_content), sep=None, engine='python', encoding=detected_encoding)
         else:
             df=pd.read_excel(uploaded_file)
+        st.write(f"Dataframe: {df}")
         if date_setting:
             checking_date = check_date_format(modifying_nas(df), date_setting)
     
@@ -291,6 +292,7 @@ if st.button('Upload'):
             st.error(f"The file contains data with null values. Affected columns: {', '.join(check_null_cells(modifying_nas(df), null_cells_setting))}. Please edit it before proceeding.")
         elif primary_key_setting and check_duplicates(df, case_sensitive_setting, primary_key_setting) == 2:
             st.error(f"The table contains columns with duplicate values. Affected columns: {', '.join(primary_key_setting)}. Please edit it before proceeding.")
+            st.stop()
         elif check_duplicates(df, case_sensitive_setting) == 2:
             st.error("The table contains duplicate rows. Please remove them before proceeding.")
         else:

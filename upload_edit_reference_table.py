@@ -424,6 +424,31 @@ def create_table_info(json_data):
     df = pd.DataFrame(data)
     return df
 
+def prepare_downloaded_data():
+    downloaded_data = cast_columns(st.session_state['data'])
+    downloaded_data = delete_null_rows(modifying_nas(downloaded_data))
+    downloaded_data = delete_decimal_zero(downloaded_data)
+    return downloaded_data
+
+def generate_download_file(data, file_format):
+    buffer = io.BytesIO() if file_format == "xlsx" else io.StringIO()
+    if file_format == "csv":
+        data.to_csv(buffer, index=False)
+        mime = 'text/csv'
+        ext = "csv"
+    elif file_format == "tsv":
+        data.to_csv(buffer, sep='\t', index=False)
+        mime = 'text/tab-separated-values'
+        ext = "txt"
+    elif file_format == "xlsx":
+        with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+            data.to_excel(writer, index=False)
+        mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        ext = "xlsx"
+    else:
+        return None, None, None
+    return buffer.getvalue(), mime, ext
+    
 # Protected saving & snapshoting
 def get_now_utc():
     now_utc = datetime.datetime.now(dttimezone.utc)
@@ -544,54 +569,25 @@ elif st.session_state['selected-table'] is not None:
             st.markdown(f"**Case Sensitive Columns:** {', '.join(case_sensitive_columns)}")
         st.markdown(f"**Rows Count:** {selected_row['rowsCount']}")
 
-    # Download table as CSV, TSV or Excel
-    downloaded_data = cast_columns(st.session_state['data'])
-    downloaded_data = delete_null_rows(modifying_nas(downloaded_data))
-    downloaded_data = delete_decimal_zero(downloaded_data)
-    downloaded_file_name = split_table_id(st.session_state['selected-table'])[1]
-        
-    # Uložení dataframe do CSV v paměti
-    csv_buffer = io.StringIO()
-    downloaded_data.to_csv(csv_buffer, index=False)
-    csv_data = csv_buffer.getvalue()
+    if st.session_state.get('data') is not None:
+        downloaded_file_name = split_table_id(st.session_state['selected-table'])[1]
+        col5, col6, col7 = st.columns([1, 1, 6])
+        with col5:
+            if st.download_button(label="Download CSV", data="", file_name="dummy.csv"): 
+                data, mime, ext = generate_download_file(prepare_downloaded_data(), "csv")
+                st.download_button(label="Download CSV", data=data, file_name=f"{downloaded_file_name}.{ext}", mime=mime)
+    
+        with col6:
+            if st.download_button(label="Download TSV", data="", file_name="dummy.txt"):
+                data, mime, ext = generate_download_file(prepare_downloaded_data(), "tsv")
+                st.download_button(label="Download TSV", data=data, file_name=f"{downloaded_file_name}.{ext}", mime=mime)
+    
+        with col7:
+            if st.download_button(label="Download XLSX", data="", file_name="dummy.xlsx"):
+                data, mime, ext = generate_download_file(prepare_downloaded_data(), "xlsx")
+                st.download_button(label="Download XLSX", data=data, file_name=f"{downloaded_file_name}.{ext}", mime=mime)
 
-    # Uložení dataframe do TSV v paměti
-    tsv_buffer = io.StringIO()
-    downloaded_data.to_csv(tsv_buffer, sep='\t', index=False)
-    tsv_data = tsv_buffer.getvalue()
-
-    # Uložení dataframe do Excelu v paměti
-    xlsx_buffer = io.BytesIO()
-    with pd.ExcelWriter(xlsx_buffer, engine='openpyxl') as writer:
-        downloaded_data.to_excel(writer, index=False)
-    xlsx_data = xlsx_buffer.getvalue()
-
-    col5, col6, col7 = st.columns([1, 1, 6])
-
-    with col5:
-        st.download_button(
-            label="Download CSV",
-            data=csv_data,
-            file_name=f"{downloaded_file_name}.csv",
-            mime='text/csv'
-        )
-
-    with col6:
-        st.download_button(
-            label="Download TSV",
-            data=tsv_data,
-            file_name=f"{downloaded_file_name}.txt",
-            mime='text/tab-separated-values'
-        )
-
-    with col7:
-        st.download_button(
-            label="Download XLSX",
-            data=xlsx_data,
-            file_name=f"{downloaded_file_name}.xlsx",
-            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-        
+    
     edited_data = st.data_editor(st.session_state['data'], num_rows="dynamic", height=500, use_container_width=True,
                                  column_config=create_column_config(st.session_state['data']))
 

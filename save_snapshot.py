@@ -470,102 +470,100 @@ def get_username_by_password(password, df_passwords):
 init()
 st.session_state["tables_id"] = fetch_all_ids()
 
-if st.session_state['upload-tables']:
-        selected_bucket = "mso_dev_reference_tables"
-        uploaded_file = st.file_uploader("Upload a file", type=['csv', 'xlsx'])
-        table_name = "mso_dev_client"
+selected_bucket = "mso_dev_reference_tables"
+uploaded_file = st.file_uploader("Upload a file", type=['csv', 'xlsx'])
+table_name = "mso_dev_client"
 
-
-        # Upload button
-        if st.button('Upload'):
-            with st.spinner('Uploading table and checking data...'):
-                table_id = selected_bucket + '.' + table_name
-                st.session_state["uploaded_table_id"] = table_id
-                column_setting = get_setting(token, selected_bucket, table_id)[0]
-                format_setting = split_dict(column_setting, 2)
-                null_cells_setting = split_dict(column_setting, 1)
-                case_sensitive_setting = get_setting(token, selected_bucket, table_id)[3]
-                primary_key_setting = get_setting(token, selected_bucket, table_id)[1]
-                date_setting = date_setting(column_setting)
-                if Path(uploaded_file.name).suffix == '.csv':
-                    file_content = uploaded_file.read()
-                    try:
-                        df = pd.read_csv(io.BytesIO(file_content), sep=None, engine='python', encoding='utf-8-sig')
-                    except:
-                        result = from_bytes(file_content).best()
-                        detected_encoding = result.encoding
-                        df = pd.read_csv(io.BytesIO(file_content), sep=None, engine='python', encoding=detected_encoding)
-                else:
-                    df=pd.read_excel(uploaded_file)
-                if date_setting:
-                    checking_date = check_date_format(modifying_nas(df), date_setting)
-            
-                missing_columns = check_columns_diff(get_setting(token, selected_bucket, table_id)[2], df.columns.values.tolist())[0]
-                extra_columns = check_columns_diff(get_setting(token, selected_bucket, table_id)[2], df.columns.values.tolist())[1]
-
-                if missing_columns:
-                    st.error(f"Some columns are missing in the file. Affected columns: {', '.join(missing_columns)}. The column names are case-sensitive. Please edit it before proceeding.")
-                elif extra_columns:
-                    st.error(f"There are extra columns. Adding new columns is not allowed. Affected columns: {', '.join(extra_columns)}. The column names are case-sensitive. If you want to add new columns, please contact the analytics team.")
-                elif check_null_rows(modifying_nas(df)):
-                    st.error("The file contains null rows. Please remove them before proceeding.")
-                elif check_col_types(df, format_setting):
-                    st.error(f"The file contains data in the wrong format. Affected columns: {', '.join(check_col_types(df, format_setting))}. Please edit it before proceeding.")
-                elif date_setting and checking_date[0]:
-                    st.error(f"The file contains date in the wrong format. Affected columns: {', '.join(checking_date[0])}. Please edit it before proceeding.")         
-                elif check_null_cells(modifying_nas(df), null_cells_setting):
-                    st.error(f"The file contains data with null values. Affected columns: {', '.join(check_null_cells(modifying_nas(df), null_cells_setting))}. Please edit it before proceeding.")
-                elif primary_key_setting and check_duplicates(df, case_sensitive_setting, primary_key_setting) == 2:
-                    st.error(f"The table contains columns with duplicate values. Affected columns: {', '.join(primary_key_setting)}. Please edit it before proceeding.")
-                elif check_duplicates(df, case_sensitive_setting) == 2:
-                    st.error("The table contains duplicate rows. Please remove them before proceeding.")
-                else:
-                    if date_setting:
-                        st.session_state['data'] = checking_date[1]
-                    else:
-                        st.session_state['data'] = modifying_nas(df)
-                st.success("File uploaded and data checked successfully!", icon = "🎉")
-                st.session_state["save_requested"] = True
-                st.rerun()
-
-        # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
-        if logged_user == 'True':
-            if st.session_state["save_requested"] and st.session_state['user_name'] == None:
-                password_input = st.text_input("Enter password:", type="password")
-                if "passwords" not in st.session_state:
-                    st.session_state['passwords'] = get_password_dataframe(f"in.c-reference_tables_metadata.passwords_{get_table_name_suffix()}")
-                if st.button("Login and save data"):
-                    st.session_state['user_name'] = get_username_by_password(password_input, st.session_state['passwords'])
-                    if st.session_state['user_name'] != None:
-                        st.success(f"✅ Password is correct. Hi, {st.session_state['user_name']}. You are logged in!")
-                    else:
-                        st.error("Invalid password.")      
-        else:
-            st.session_state['user_name'] = "Anonymous Squirrel"
-
-        st.write(f"Save requests: {st.session_state['save_requested']}")
-        st.write(f"User name: {st.session_state['user_name']}")
-        # Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, tak se uloží
-        if st.session_state['user_name'] != None and st.session_state["save_requested"]:
+# Upload button
+if st.button('Upload'):
+    with st.spinner('Uploading table and checking data...'):
+        table_id = selected_bucket + '.' + table_name
+        st.session_state["uploaded_table_id"] = table_id
+        column_setting = get_setting(token, selected_bucket, table_id)[0]
+        format_setting = split_dict(column_setting, 2)
+        null_cells_setting = split_dict(column_setting, 1)
+        case_sensitive_setting = get_setting(token, selected_bucket, table_id)[3]
+        primary_key_setting = get_setting(token, selected_bucket, table_id)[1]
+        date_setting = date_setting(column_setting)
+        if Path(uploaded_file.name).suffix == '.csv':
+            file_content = uploaded_file.read()
             try:
-                with st.spinner('Saving table...'):
-                    write_to_keboola(st.session_state['data'], st.session_state["uploaded_table_id"],'uploaded_data.csv.gz', "reference_table") 
-                st.success('Table saved successfully!', icon = "🎉")
-                if saving_snapshot == "True":
-                    with st.spinner('Saving snapshot...'):
-                        df_serialized = st.session_state['data'].to_json(orient="records")
-                        df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table_id": [st.session_state["uploaded_table_id"]], "data": [df_serialized]})
-                        write_to_keboola(df_snapshot, f"in.c-reference_tables_metadata.snapshots_{get_table_name_suffix()}",'snapshot_data.csv.gz', "snapshot")
-                        st.success("Snapshot saved successfully!", icon = "🎉")
-            except Exception as e:
-                st.error(f"Error: {str(e)}")
-            # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
-            st.session_state["save_requested"] = False
-            st.session_state['upload-tables'] = False
-            st.session_state['selected-table'] = st.session_state["uploaded_table_id"]
-            st.session_state["uploaded_table_id"] = None
-            st.cache_data.clear()
-            time.sleep(3)
-            st.rerun()
+                df = pd.read_csv(io.BytesIO(file_content), sep=None, engine='python', encoding='utf-8-sig')
+            except:
+                result = from_bytes(file_content).best()
+                detected_encoding = result.encoding
+                df = pd.read_csv(io.BytesIO(file_content), sep=None, engine='python', encoding=detected_encoding)
+        else:
+            df=pd.read_excel(uploaded_file)
+        if date_setting:
+            checking_date = check_date_format(modifying_nas(df), date_setting)
+    
+        missing_columns = check_columns_diff(get_setting(token, selected_bucket, table_id)[2], df.columns.values.tolist())[0]
+        extra_columns = check_columns_diff(get_setting(token, selected_bucket, table_id)[2], df.columns.values.tolist())[1]
+
+        if missing_columns:
+            st.error(f"Some columns are missing in the file. Affected columns: {', '.join(missing_columns)}. The column names are case-sensitive. Please edit it before proceeding.")
+        elif extra_columns:
+            st.error(f"There are extra columns. Adding new columns is not allowed. Affected columns: {', '.join(extra_columns)}. The column names are case-sensitive. If you want to add new columns, please contact the analytics team.")
+        elif check_null_rows(modifying_nas(df)):
+            st.error("The file contains null rows. Please remove them before proceeding.")
+        elif check_col_types(df, format_setting):
+            st.error(f"The file contains data in the wrong format. Affected columns: {', '.join(check_col_types(df, format_setting))}. Please edit it before proceeding.")
+        elif date_setting and checking_date[0]:
+            st.error(f"The file contains date in the wrong format. Affected columns: {', '.join(checking_date[0])}. Please edit it before proceeding.")         
+        elif check_null_cells(modifying_nas(df), null_cells_setting):
+            st.error(f"The file contains data with null values. Affected columns: {', '.join(check_null_cells(modifying_nas(df), null_cells_setting))}. Please edit it before proceeding.")
+        elif primary_key_setting and check_duplicates(df, case_sensitive_setting, primary_key_setting) == 2:
+            st.error(f"The table contains columns with duplicate values. Affected columns: {', '.join(primary_key_setting)}. Please edit it before proceeding.")
+        elif check_duplicates(df, case_sensitive_setting) == 2:
+            st.error("The table contains duplicate rows. Please remove them before proceeding.")
+        else:
+            if date_setting:
+                st.session_state['data'] = checking_date[1]
+            else:
+                st.session_state['data'] = modifying_nas(df)
+        st.success("File uploaded and data checked successfully!", icon = "🎉")
+        st.session_state["save_requested"] = True
+        st.rerun()
+
+# Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
+if logged_user == 'True':
+    if st.session_state["save_requested"] and st.session_state['user_name'] == None:
+        password_input = st.text_input("Enter password:", type="password")
+        if "passwords" not in st.session_state:
+            st.session_state['passwords'] = get_password_dataframe(f"in.c-reference_tables_metadata.passwords_{get_table_name_suffix()}")
+        if st.button("Login and save data"):
+            st.session_state['user_name'] = get_username_by_password(password_input, st.session_state['passwords'])
+            if st.session_state['user_name'] != None:
+                st.success(f"✅ Password is correct. Hi, {st.session_state['user_name']}. You are logged in!")
+            else:
+                st.error("Invalid password.")      
+else:
+    st.session_state['user_name'] = "Anonymous Squirrel"
+
+st.write(f"Save requests: {st.session_state['save_requested']}")
+st.write(f"User name: {st.session_state['user_name']}")
+# Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, tak se uloží
+if st.session_state['user_name'] != None and st.session_state["save_requested"]:
+    try:
+        with st.spinner('Saving table...'):
+            write_to_keboola(st.session_state['data'], st.session_state["uploaded_table_id"],'uploaded_data.csv.gz', "reference_table") 
+        st.success('Table saved successfully!', icon = "🎉")
+        if saving_snapshot == "True":
+            with st.spinner('Saving snapshot...'):
+                df_serialized = st.session_state['data'].to_json(orient="records")
+                df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table_id": [st.session_state["uploaded_table_id"]], "data": [df_serialized]})
+                write_to_keboola(df_snapshot, f"in.c-reference_tables_metadata.snapshots_{get_table_name_suffix()}",'snapshot_data.csv.gz', "snapshot")
+                st.success("Snapshot saved successfully!", icon = "🎉")
+    except Exception as e:
+        st.error(f"Error: {str(e)}")
+    # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
+    st.session_state["save_requested"] = False
+    st.session_state['upload-tables'] = False
+    st.session_state['selected-table'] = st.session_state["uploaded_table_id"]
+    st.session_state["uploaded_table_id"] = None
+    st.cache_data.clear()
+    time.sleep(3)
+    st.rerun()
 
 display_footer_section()

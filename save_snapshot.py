@@ -288,8 +288,6 @@ if st.button('Upload'):
             st.error(f"The file contains data in the wrong format. Affected columns: {', '.join(check_col_types(df, format_setting))}. Please edit it before proceeding.")
         elif date_setting and checking_date[0]:
             st.error(f"The file contains date in the wrong format. Affected columns: {', '.join(checking_date[0])}. Please edit it before proceeding.")         
-        elif check_null_cells(modifying_nas(df), null_cells_setting):
-            st.error(f"The file contains data with null values. Affected columns: {', '.join(check_null_cells(modifying_nas(df), null_cells_setting))}. Please edit it before proceeding.")
         elif primary_key_setting and check_duplicates(df, case_sensitive_setting, primary_key_setting) == 2:
             st.error(f"The table contains columns with duplicate values. Affected columns: {', '.join(primary_key_setting)}. Please edit it before proceeding.")
             st.stop()

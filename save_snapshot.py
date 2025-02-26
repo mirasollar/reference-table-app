@@ -470,7 +470,7 @@ def get_username_by_password(password, df_passwords):
 init()
 st.session_state["tables_id"] = fetch_all_ids()
 
-selected_bucket = "mso_dev_reference_tables"
+selected_bucket = "in.c-mso_dev_reference_tables"
 uploaded_file = st.file_uploader("Upload a file", type=['csv', 'xlsx'])
 table_name = "mso_dev_client"
 

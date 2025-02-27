@@ -290,10 +290,11 @@ if st.button('Upload'):
             st.error(f"The file contains date in the wrong format. Affected columns: {', '.join(checking_date[0])}. Please edit it before proceeding.")         
         elif primary_key_setting and check_duplicates(df, case_sensitive_setting, primary_key_setting) == 2:
             st.error(f"The table contains columns with duplicate values. Affected columns: {', '.join(primary_key_setting)}. Please edit it before proceeding.")
-            st.write(f"Dataframe po kontrole PK: {df}")
-            st.stop()
+
         elif check_duplicates(df, case_sensitive_setting) == 2:
             st.error("The table contains duplicate rows. Please remove them before proceeding.")
+            st.write(f"Dataframe po kontrole PK: {df}")
+            st.stop()
         else:
             if date_setting:
                 st.session_state['data'] = checking_date[1]

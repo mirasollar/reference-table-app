@@ -293,16 +293,19 @@ if st.button('Upload'):
 
         elif check_duplicates(df, case_sensitive_setting) == 2:
             st.error("The table contains duplicate rows. Please remove them before proceeding.")
-            st.write(f"Dataframe po kontrole PK: {df}")
-            st.stop()
+            # st.write(f"Dataframe po kontrole PK: {df}")
+            # st.stop()
         else:
             if date_setting:
                 st.session_state['data'] = checking_date[1]
             else:
                 st.session_state['data'] = modifying_nas(df)
-        st.success("File uploaded and data checked successfully!", icon = "🎉")
-        st.session_state["save_requested"] = True
-        st.rerun()
+            st.success("File uploaded and data checked successfully!", icon = "🎉")
+            st.write(f"Dataframe po kontrole PK: {df}")
+            st.write(f"Dataframe v sešně po kontrole PK: {st.session_state['data']}")
+            st.session_state["save_requested"] = True
+            # st.rerun()
+            st.stop()
 
 
 # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login

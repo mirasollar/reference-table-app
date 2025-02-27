@@ -271,7 +271,7 @@ if st.button('Upload'):
                 df = pd.read_csv(io.BytesIO(file_content), sep=None, engine='python', encoding=detected_encoding)
         else:
             df=pd.read_excel(uploaded_file)
-        st.write(f"Dataframe: {df}")
+        st.write(f"Dataframe před kontrolama: {df}")
         if date_setting:
             checking_date = check_date_format(modifying_nas(df), date_setting)
     
@@ -290,7 +290,7 @@ if st.button('Upload'):
             st.error(f"The file contains date in the wrong format. Affected columns: {', '.join(checking_date[0])}. Please edit it before proceeding.")         
         elif primary_key_setting and check_duplicates(df, case_sensitive_setting, primary_key_setting) == 2:
             st.error(f"The table contains columns with duplicate values. Affected columns: {', '.join(primary_key_setting)}. Please edit it before proceeding.")
-            st.stop()
+            
         elif check_duplicates(df, case_sensitive_setting) == 2:
             st.error("The table contains duplicate rows. Please remove them before proceeding.")
         else:
@@ -301,6 +301,9 @@ if st.button('Upload'):
         st.success("File uploaded and data checked successfully!", icon = "🎉")
         st.session_state["save_requested"] = True
         st.rerun()
+        if st.session_state['data'] is None:
+            st.write(f"Dataframe po kontrolách: {st.session_state['data']}")
+            st.stop()
 
 # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
 if logged_user == 'True':

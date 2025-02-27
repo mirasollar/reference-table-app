@@ -304,8 +304,8 @@ if st.button('Upload'):
             st.write(f"Dataframe po kontrole PK: {df}")
             st.write(f"Dataframe v sešně po kontrole PK: {st.session_state['data']}")
             st.session_state["save_requested"] = True
-            # st.rerun()
-            st.stop()
+            st.rerun()
+            # st.stop()
 
 
 # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login

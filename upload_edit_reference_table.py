@@ -491,7 +491,7 @@ if st.session_state['selected-table'] is None and (st.session_state['upload-tabl
 
     #Keboola title
     st.markdown("""<h1 style="font-size:32px;"><span style="color:#1F8FFF;">Keboola</span> Data Editor</h1>""", unsafe_allow_html=True)
-    st.info('Select the table you want to edit. If the data is not up-to-data, click on the Reload Data button. Data freshness is displayed in the right corner.', icon="ℹ️")
+    st.info('Select the table you want to edit. If the data is not up-to-data, click on the Reload Data button.', icon="ℹ️")
 
     # Title of the Streamlit app
     st.subheader("Tables")
@@ -669,6 +669,7 @@ elif st.session_state['upload-tables']:
     if st.button(":gray[:arrow_left: Go back]", on_click=on_click_back):
         pass
     st.title('Import Data into :blue[Keboola Storage]')
+    st.info('After clicking the Upload Data button, the data will be sent to Keboola Storage using a FULL LOAD.', icon="ℹ️")
     # List and display available buckets
     buckets = client.buckets.list()
     bucket_names = ["Choose a bucket"]  # Add option to choose a bucket at the beginning

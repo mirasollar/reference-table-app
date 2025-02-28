@@ -490,7 +490,7 @@ if st.session_state['selected-table'] is None and (st.session_state['upload-tabl
     #    st.markdown(f"**Data Freshness:** \n {st.session_state['data_load_time_overview']}")
 
     #Keboola title
-    st.markdown("""<h1 style="font-size:32px;"><span style="color:#1F8FFF;">Keboola</span> Data Editor</h1>""", unsafe_allow_html=True)
+    st.markdown("""<h1><span style="color:#1F8FFF;">Keboola</span> Data Editor</h1>""", unsafe_allow_html=True)
     st.info('Select the table you want to edit. If the data is not up-to-data, click on the Reload Data button.', icon="ℹ️")
 
     # Title of the Streamlit app

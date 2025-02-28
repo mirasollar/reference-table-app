@@ -15,24 +15,6 @@ import numpy as np
 import io
 from charset_normalizer import from_bytes
 
-# JavaScript kód pro získání časové zóny a přesměrování s parametrem
-js_code = """
-<script>
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const params = new URLSearchParams(window.location.search);
-    if (!params.has("tz")) {
-        params.set("tz", tz);
-        window.location.search = params.toString();
-    }
-</script>
-"""
-
-# Vložení JavaScriptu do stránky
-st.components.v1.html(js_code, height=0)
-
-# Přečtení časové zóny z URL parametrů
-tz = st.query_params.get("tz", "UTC")
-
 # Setting page config
 st.set_page_config(page_title="Keboola Data Editor", page_icon=":robot:", layout="wide")
 
@@ -56,11 +38,11 @@ try:
 except:
     saving_snapshot = 'False'
 
-if 'data_load_time_table' not in st.session_state:
-        st.session_state['data_load_time_table'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+# if 'data_load_time_table' not in st.session_state:
+#        st.session_state['data_load_time_table'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-if 'data_load_time_overview' not in st.session_state:
-        st.session_state['data_load_time_overview'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+# if 'data_load_time_overview' not in st.session_state:
+#        st.session_state['data_load_time_overview'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 
 # Fetching data 
@@ -111,7 +93,7 @@ def update_session_state(table_id):
     with st.spinner('Loading ...'):
         st.session_state['selected-table'] = table_id
         st.session_state['data'] = get_dataframe(st.session_state['selected-table'])
-        st.session_state['data_load_time_table'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        # st.session_state['data_load_time_table'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     st.rerun()
      
 def display_table_card(row):
@@ -504,8 +486,8 @@ if st.session_state['selected-table'] is None and (st.session_state['upload-tabl
 
         st.markdown(hide_img_fs, unsafe_allow_html=True)
 
-    with col3:
-        st.markdown(f"**Data Freshness:** \n {st.session_state['data_load_time_overview']}")
+    # with col3:
+    #    st.markdown(f"**Data Freshness:** \n {st.session_state['data_load_time_overview']}")
 
     #Keboola title
     st.markdown("""<h1 style="font-size:32px;"><span style="color:#1F8FFF;">Keboola</span> Data Editor</h1>""", unsafe_allow_html=True)
@@ -556,8 +538,8 @@ elif st.session_state['selected-table'] is not None:
     col1,col2,col4= st.columns((2,7,2))
     with col1:
         st.button(":gray[:arrow_left: Back to Tables]", on_click=resetSetting, type="secondary")
-    with col4:
-         st.markdown(f"**Data Freshness:** \n {st.session_state['data_load_time_table']}")
+    # with col4:
+    #     st.markdown(f"**Data Freshness:** \n {st.session_state['data_load_time_table']}")
 
     # Data Editor
     st.title("Data Editor")

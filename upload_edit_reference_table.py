@@ -229,6 +229,7 @@ def resetSetting():
 
 def toggle_downloads():
     st.session_state["show_downloads"] = True
+    st.rerun()
 
 def cast_columns(df):
     """Ensure that columns that should be boolean are explicitly cast to boolean."""

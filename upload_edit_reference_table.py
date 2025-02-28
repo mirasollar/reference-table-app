@@ -38,13 +38,6 @@ try:
 except:
     saving_snapshot = 'False'
 
-# if 'data_load_time_table' not in st.session_state:
-#        st.session_state['data_load_time_table'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-# if 'data_load_time_overview' not in st.session_state:
-#        st.session_state['data_load_time_overview'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-
 # Fetching data 
 @st.cache_data(ttl=60,show_spinner=False)
 def get_dataframe(table_name):
@@ -82,6 +75,9 @@ def init():
 
     if 'upload-tables' not in st.session_state:
         st.session_state["upload-tables"] = False
+    
+    if "show_downloads" not in st.session_state:
+        st.session_state["show_downloads"] = False
 
     if "user_name" not in st.session_state:
         st.session_state['user_name'] = None
@@ -230,6 +226,9 @@ def write_to_keboola(data, table_name, table_path, purpose):
 def resetSetting():
     st.session_state['selected-table'] = None
     st.session_state['data'] = None
+
+def toggle_downloads():
+    st.session_state["show_downloads"] = not st.session_state["show_downloads"]
 
 def cast_columns(df):
     """Ensure that columns that should be boolean are explicitly cast to boolean."""
@@ -569,7 +568,10 @@ elif st.session_state['selected-table'] is not None:
             st.markdown(f"**Case Sensitive Columns:** {', '.join(case_sensitive_columns)}")
         st.markdown(f"**Rows Count:** {selected_row['rowsCount']}")
 
-    if st.session_state.get('data') is not None:
+    if st.button("Download Data", help="Click to show download options"):
+        toggle_downloads()
+
+    if st.session_state.get('data') is not None and st.session_state["show_downloads"]:
         downloaded_file_name = split_table_id(st.session_state['selected-table'])[1]
         col5, col6, col7 = st.columns([1, 1, 6])
         with col5:

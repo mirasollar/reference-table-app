@@ -533,7 +533,7 @@ elif st.session_state['selected-table'] is not None:
     col1,col2,col4= st.columns((2,7,2))
     with col1:
         st.button(":gray[:arrow_left: Back to Tables]", on_click=resetSetting, type="secondary")
-        # st.session_state["show_downloads"] = False
+        st.session_state["show_downloads"] = False
 
     # Data Editor
     st.title("Data Editor")

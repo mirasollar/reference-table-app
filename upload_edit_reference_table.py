@@ -228,7 +228,7 @@ def resetSetting():
     st.session_state['data'] = None
 
 def toggle_downloads():
-    st.session_state["show_downloads"] = True
+    st.session_state["show_downloads"] = not st.session_state["show_downloads"]
 
 def cast_columns(df):
     """Ensure that columns that should be boolean are explicitly cast to boolean."""
@@ -564,11 +564,8 @@ elif st.session_state['selected-table'] is not None:
             st.markdown(f"**Case Sensitive Columns:** {', '.join(case_sensitive_columns)}")
         st.markdown(f"**Rows Count:** {selected_row['rowsCount']}")
 
-    if not st.session_state["show_downloads"]:
-        st.button("Download Data", on_click=toggle_downloads, help="Click to show download options")
-        st.rerun()
-    else:
-        # if st.session_state.get('data') is not None:
+    st.button("Download Data", on_click=toggle_downloads, help="Click to show download options")
+    if st.session_state["show_downloads"] and st.session_state.get('data') is not None:
         downloaded_file_name = split_table_id(st.session_state['selected-table'])[1]
         col5, col6, col7 = st.columns([1, 1, 6])
         with col5:

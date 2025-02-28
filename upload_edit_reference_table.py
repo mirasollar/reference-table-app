@@ -511,7 +511,7 @@ if st.session_state['selected-table'] is None and (st.session_state['upload-tabl
         sort_option = st.selectbox("Sort By Name", ["Sort By Name", "Sort By Date Created", "Sort By Date Updated"],label_visibility="collapsed")
     
     with col_upload:
-        if st.button("Upload New Data", on_click=on_click_uploads, use_container_width = True):
+        if st.button("Upload Data", on_click=on_click_uploads, use_container_width = True):
             pass
 
     # Filtrace dat podle vyhledávacího dotazu
@@ -544,7 +544,7 @@ elif st.session_state['selected-table'] is not None:
     st.title("Data Editor")
   
     # Info
-    st.info('After clicking the Save Data button, the data will be sent to Keboola Storage using a full load. If the data is not up-to-date, click on the Reload Data button. Data freshness is displayed in the right corner.', icon="ℹ️")
+    st.info('After clicking the Save Data button, the data will be sent to Keboola Storage using a FULL LOAD.', icon="ℹ️")
 
     #Select Box
     option = st.selectbox("Select Table", st.session_state["tables_id"], index=None, placeholder="Select table",label_visibility="collapsed")

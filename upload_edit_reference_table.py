@@ -485,9 +485,6 @@ if st.session_state['selected-table'] is None and (st.session_state['upload-tabl
 
         st.markdown(hide_img_fs, unsafe_allow_html=True)
 
-    # with col3:
-    #    st.markdown(f"**Data Freshness:** \n {st.session_state['data_load_time_overview']}")
-
     #Keboola title
     st.markdown("""<h1><span style="color:#1F8FFF;">Keboola</span> Data Editor</h1>""", unsafe_allow_html=True)
     st.info('Select the table you want to edit. If the data is not up-to-data, click on the Reload Data button.', icon="ℹ️")
@@ -536,8 +533,7 @@ elif st.session_state['selected-table'] is not None:
     col1,col2,col4= st.columns((2,7,2))
     with col1:
         st.button(":gray[:arrow_left: Back to Tables]", on_click=resetSetting, type="secondary")
-    # with col4:
-    #     st.markdown(f"**Data Freshness:** \n {st.session_state['data_load_time_table']}")
+        st.session_state["show_downloads"] = False
 
     # Data Editor
     st.title("Data Editor")

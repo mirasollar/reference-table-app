@@ -564,9 +564,10 @@ elif st.session_state['selected-table'] is not None:
             st.markdown(f"**Case Sensitive Columns:** {', '.join(case_sensitive_columns)}")
         st.markdown(f"**Rows Count:** {selected_row['rowsCount']}")
 
-    if not st.session_state["show_downloads"] and st.session_state.get('data') is not None:
+    if not st.session_state["show_downloads"]:
         st.button("Download Data", on_click=toggle_downloads, help="Click to show download options")
     else:
+        # if st.session_state.get('data') is not None:
         downloaded_file_name = split_table_id(st.session_state['selected-table'])[1]
         col5, col6, col7 = st.columns([1, 1, 6])
         with col5:

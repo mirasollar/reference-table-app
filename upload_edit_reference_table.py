@@ -566,7 +566,7 @@ elif st.session_state['selected-table'] is not None:
 
     if not st.session_state["show_downloads"]:
         st.button("Download Data", on_click=toggle_downloads, help="Click to show download options")
-        st.experimental_rerun()
+        rerun()
     else:
         # if st.session_state.get('data') is not None:
         downloaded_file_name = split_table_id(st.session_state['selected-table'])[1]

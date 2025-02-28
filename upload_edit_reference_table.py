@@ -533,7 +533,7 @@ elif st.session_state['selected-table'] is not None:
     col1,col2,col4= st.columns((2,7,2))
     with col1:
         st.button(":gray[:arrow_left: Back to Tables]", on_click=resetSetting, type="secondary")
-        st.session_state["show_downloads"] = False
+        # st.session_state["show_downloads"] = False
 
     # Data Editor
     st.title("Data Editor")
@@ -565,7 +565,9 @@ elif st.session_state['selected-table'] is not None:
         st.markdown(f"**Rows Count:** {selected_row['rowsCount']}")
 
     st.button("Download Data", on_click=toggle_downloads, help="Click to show download options")
-    if st.session_state["show_downloads"] and st.session_state.get('data') is not None:
+
+    # and st.session_state.get('data') is not None:
+    if st.session_state["show_downloads"]:
         downloaded_file_name = split_table_id(st.session_state['selected-table'])[1]
         col5, col6, col7 = st.columns([1, 1, 6])
         with col5:

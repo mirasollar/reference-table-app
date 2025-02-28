@@ -15,13 +15,23 @@ import numpy as np
 import io
 from charset_normalizer import from_bytes
 
-get_tz = """
-async function getTimezone() {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone;
-}
+# JavaScript kód pro získání časové zóny a přesměrování s parametrem
+js_code = """
+<script>
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has("tz")) {
+        params.set("tz", tz);
+        window.location.search = params.toString();
+    }
+</script>
 """
-# Volání JavaScriptu
-tz = st.js(get_tz)
+
+# Vložení JavaScriptu do stránky
+st.components.v1.html(js_code, height=0)
+
+# Přečtení časové zóny z URL parametrů
+tz = st.query_params.get("tz", "UTC")
 
 # Setting page config
 st.set_page_config(page_title="Keboola Data Editor", page_icon=":robot:", layout="wide")

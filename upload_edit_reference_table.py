@@ -226,6 +226,7 @@ def write_to_keboola(data, table_name, table_path, purpose):
 def resetSetting():
     st.session_state['selected-table'] = None
     st.session_state['data'] = None
+    st.session_state["show_downloads"] = False
 
 def toggle_downloads():
     st.session_state["show_downloads"] = not st.session_state["show_downloads"]
@@ -532,8 +533,7 @@ if st.session_state['selected-table'] is None and (st.session_state['upload-tabl
 elif st.session_state['selected-table'] is not None:
     col1,col2,col4= st.columns((2,7,2))
     with col1:
-        if st.button(":gray[:arrow_left: Back to Tables]", on_click=resetSetting, type="secondary"):
-            st.session_state["show_downloads"] = False
+        st.button(":gray[:arrow_left: Back to Tables]", on_click=resetSetting, type="secondary")
 
     # Data Editor
     st.title("Data Editor")

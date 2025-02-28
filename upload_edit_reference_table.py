@@ -15,6 +15,14 @@ import numpy as np
 import io
 from charset_normalizer import from_bytes
 
+get_tz = """
+async function getTimezone() {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+"""
+# Volání JavaScriptu
+tz = st.js(get_tz)
+
 # Setting page config
 st.set_page_config(page_title="Keboola Data Editor", page_icon=":robot:", layout="wide")
 
@@ -492,6 +500,7 @@ if st.session_state['selected-table'] is None and (st.session_state['upload-tabl
     #Keboola title
     st.markdown("""<h1 style="font-size:32px;"><span style="color:#1F8FFF;">Keboola</span> Data Editor</h1>""", unsafe_allow_html=True)
     st.info('Select the table you want to edit. If the data is not up-to-data, click on the Reload Data button. Data freshness is displayed in the right corner.', icon="ℹ️")
+    st.write(f"TZ je: {tz}")
 
     # Title of the Streamlit app
     st.subheader("Tables")

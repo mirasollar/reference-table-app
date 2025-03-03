@@ -73,6 +73,9 @@ def init():
     if 'data' not in st.session_state:
         st.session_state['data'] = None 
 
+    if "edited_data" not in st.session_state:
+        st.session_state["edited_data"] = None 
+
     if 'upload-tables' not in st.session_state:
         st.session_state["upload-tables"] = False
     
@@ -608,9 +611,9 @@ elif st.session_state['selected-table'] is not None:
             else:                            
                 if date_setting:
                     # st.session_state['data'] = checking_date[1]
-                    edited_data = modifying_nas(checking_date[1])
+                    st.session_state["edited_data"] = modifying_nas(checking_date[1])
                 else:
-                    edited_data = modifying_nas(edited_data)
+                    st.session_state["edited_data"] = modifying_nas(edited_data)
                 st.write(f"Dataframe před uložením: {edited_data}")
                 st.write(f"Dataframe type před uložením: {edited_data.dtypes}")
                 st.success("Metadata validated successfully!", icon = "🎉")
@@ -636,11 +639,11 @@ elif st.session_state['selected-table'] is not None:
     if st.session_state['user_name'] != None and st.session_state["save_requested"]:
         try:
             with st.spinner('Saving table...'): 
-                write_to_keboola(edited_data, st.session_state["selected-table"],'updated_data.csv.gz', "reference_table")
+                write_to_keboola(st.session_state["edited_data"], st.session_state["selected-table"],'updated_data.csv.gz', "reference_table")
                 st.success("Table saved successfully!", icon = "🎉")
             if saving_snapshot == "True":
                 with st.spinner('Saving snapshot...'):
-                    df_serialized = edited_data.to_json(orient="records")
+                    df_serialized = st.session_state["edited_data"].to_json(orient="records")
                     df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table_id": [st.session_state["selected-table"]], "data": [df_serialized]})
                     write_to_keboola(df_snapshot, f"in.c-reference_tables_metadata.snapshots_{get_table_name_suffix()}",'snapshot_data.csv.gz', "snapshot")
                     st.success("Snapshot saved successfully!", icon = "🎉")

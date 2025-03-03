@@ -611,6 +611,7 @@ elif st.session_state['selected-table'] is not None:
                     edited_data = modifying_nas(checking_date[1])
                 else:
                     edited_data = modifying_nas(edited_data)
+                st.write(f"Dataframe před uložením: {edited_data}")
                 st.success("Metadata validated successfully!", icon = "🎉")
                 st.session_state["save_requested"] = True
                 st.rerun()

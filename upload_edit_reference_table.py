@@ -89,7 +89,6 @@ def update_session_state(table_id):
     with st.spinner('Loading ...'):
         st.session_state['selected-table'] = table_id
         st.session_state['data'] = get_dataframe(st.session_state['selected-table'])
-        # st.session_state['data_load_time_table'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     st.rerun()
      
 def display_table_card(row):
@@ -158,12 +157,8 @@ def fetch_all_ids():
         ids_list = [{
             'table_id': table["id"],
             'displayName': table["displayName"],
-            # 'primaryKey': ', '.join(table["primaryKey"]) if table["primaryKey"] else "",
             'lastImportDate': table['lastImportDate'],
-            # 'rowsCount': table['rowsCount'],
             'created': table['created']
-            # 'description': next((item['value'] for item in table["metadata"] if item['key'] == 'KBC.description'), None),
-            # 'column_metadata': client.tables.detail(table["id"])["columnMetadata"]
         } for table in tables]
         df_stage = pd.DataFrame(ids_list)
         df = pd.concat([df, df_stage])
@@ -181,12 +176,6 @@ def on_click_back():
 # table_name, table_id ,updated,created
 def display_table_section(row):
     with st.container():
-        # st.subheader(f":blue[{table_name}]")
-        # st.caption(table_id)
-        # st.caption(f"Created: {created}")
-        # st.caption(f"Updated: {updated}")
-        # st.markdown("""---""")
-
         display_table_card(row)
 
 def display_footer_section():
@@ -326,7 +315,6 @@ def check_col_types(df_to_check, col_setting):
     return wrong_columns
 
 def modifying_nas(df_for_editing):
-    # df_for_editing = df_for_editing.astype(str)
     mod_df = df_for_editing.replace(r'^(\s*|None|none|NONE|NaN|nan|Null|null|NULL|n\/a|N\/A|<NA>)$', np.nan, regex=True)
     return mod_df
 
@@ -587,7 +575,7 @@ elif st.session_state['selected-table'] is not None:
                                  column_config=create_column_config(st.session_state['data']))
 
     if st.button("Save Data", key="save-data-tables"):
-        with st.spinner('Saving Data...'):
+        with st.spinner('Validating Metadata...'):
             edited_data = cast_columns(edited_data)
             # st.write(edited_data)
             edited_data = delete_null_rows(modifying_nas(edited_data))
@@ -623,7 +611,7 @@ elif st.session_state['selected-table'] is not None:
                     edited_data = modifying_nas(checking_date[1])
                 else:
                     edited_data = modifying_nas(edited_data)
-                
+                st.success("Metadata validated successfully!", icon = "🎉")
                 st.session_state["save_requested"] = True
                 st.rerun()
 
@@ -686,10 +674,9 @@ elif st.session_state['upload-tables']:
         table_names.extend([re.sub('.*\.', '', table["id"]) for table in tables if re.search(f"^{selected_bucket}\.", table["id"])])
         table_name = st.selectbox('Choose a table', table_names, placeholder="Choose an option")
 
-
         # Upload button
         if st.button('Upload Data'):
-            with st.spinner('Uploading table and checking data...'):
+            with st.spinner('Validating Metadata...'):
                 if selected_bucket == "Choose a bucket" or not uploaded_file or table_name == "Choose a table":
                     st.error('Error: Please upload a file and select a table name.') 
                 else:
@@ -738,7 +725,7 @@ elif st.session_state['upload-tables']:
                             st.session_state['data'] = checking_date[1]
                         else:
                             st.session_state['data'] = modifying_nas(df)
-                        st.success("File uploaded and data checked successfully!", icon = "🎉")
+                        st.success("File uploaded and metadata validated successfully!", icon = "🎉")
                         st.session_state["save_requested"] = True
                         st.rerun()
 
@@ -748,7 +735,7 @@ elif st.session_state['upload-tables']:
                 password_input = st.text_input("Enter password:", type="password")
                 if "passwords" not in st.session_state:
                     st.session_state['passwords'] = get_password_dataframe(f"in.c-reference_tables_metadata.passwords_{get_table_name_suffix()}")
-                if st.button("Login and save data"):
+                if st.button("Login and Save Data"):
                     st.session_state['user_name'] = get_username_by_password(password_input, st.session_state['passwords'])
                     if st.session_state['user_name'] != None:
                         st.success(f"✅ Password is correct. Hi, {st.session_state['user_name']}. You are logged in!")

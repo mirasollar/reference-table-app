@@ -313,7 +313,6 @@ def check_col_types(df_to_check, col_setting):
     col_setting = {k: v for k, v in col_setting.items() if not re.search("%", v)}
     wanted_keys = tuple(col_setting.keys())
     col_types_dict = dict_filter(col_types_dict, wanted_keys)
-    # st.write(f"Detected column formatting: {col_types_dict}")
     wrong_columns = [k for k in col_types_dict if col_types_dict[k] != col_setting.get(k)]
     return wrong_columns
 
@@ -580,7 +579,6 @@ elif st.session_state['selected-table'] is not None:
     if st.button("Save Data", key="save-data-tables"):
         with st.spinner('Validating Metadata...'):
             edited_data = cast_columns(edited_data)
-            # st.write(edited_data)
             edited_data = delete_null_rows(modifying_nas(edited_data))
             edited_data = delete_decimal_zero(edited_data)
             
@@ -614,8 +612,6 @@ elif st.session_state['selected-table'] is not None:
                     st.session_state["edited_data"] = modifying_nas(checking_date[1])
                 else:
                     st.session_state["edited_data"] = modifying_nas(edited_data)
-                st.write(f"Dataframe před uložením: {edited_data}")
-                st.write(f"Dataframe type před uložením: {edited_data.dtypes}")
                 st.success("Metadata validated successfully!", icon = "🎉")
                 st.session_state["save_requested"] = True
                 st.rerun()

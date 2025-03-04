@@ -646,6 +646,7 @@ elif st.session_state['selected-table'] is not None:
             st.error(f"Error: {str(e)}")
         # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
         st.session_state["save_requested"] = False
+        st.session_state["data"] = st.session_state["edited_data"]
         st.cache_data.clear()
         time.sleep(3)
         st.rerun()

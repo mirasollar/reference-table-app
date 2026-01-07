@@ -6,6 +6,7 @@ import os
 import csv
 import pandas as pd
 import datetime
+from datetime import timezone as dttimezone
 import time
 from pathlib import Path
 import re
@@ -27,12 +28,15 @@ LOGO_IMAGE_PATH = os.path.abspath("./app/static/keboola.png")
 client = Client(kbc_url, token)
 kbc_client = Client(kbc_url, kbc_token)
 
-if 'data_load_time_table' not in st.session_state:
-        st.session_state['data_load_time_table'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+try:
+    logged_user = st.secrets["logged_user"]
+except:
+    logged_user = 'False'
 
-if 'data_load_time_overview' not in st.session_state:
-        st.session_state['data_load_time_overview'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
+try:
+    saving_snapshot = st.secrets["saving_snapshot"]
+except:
+    saving_snapshot = 'False'
 
 # Fetching data 
 @st.cache_data(ttl=60,show_spinner=False)
@@ -59,6 +63,9 @@ def get_dataframe(table_name):
 def init():
     if 'selected-table' not in st.session_state:
         st.session_state['selected-table'] = None
+        
+    if "uploaded_table_id" not in st.session_state:
+        st.session_state["uploaded_table_id"] = None
 
     if 'tables_id' not in st.session_state:
         st.session_state['tables_id'] = pd.DataFrame(columns=['table_id'])
@@ -66,46 +73,35 @@ def init():
     if 'data' not in st.session_state:
         st.session_state['data'] = None 
 
+    if "edited_data" not in st.session_state:
+        st.session_state["edited_data"] = None 
+
     if 'upload-tables' not in st.session_state:
         st.session_state["upload-tables"] = False
     
-    if 'log-exists' not in st.session_state:
-        st.session_state["log-exists"] = False
+    if "show_downloads" not in st.session_state:
+        st.session_state["show_downloads"] = False
 
-    # if st.session_state["log-exists"] == False:
-    #     try: 
-    #         kbc_client.buckets.detail("in.c-keboolasheets")
-    #         print("Bucket exists")
-    #     except:
-    #         kbc_client.buckets.create("in.c-keboolasheets", "keboolasheets")
-    #         print("Bucket created")
-    #     try:
-    #         kbc_client.tables.detail("in.c-keboolasheets.log")
-    #         print("Table exists")
-    #         st.session_state["log-exists"] = True
-    #     except:
-    #         kbc_client.tables.create(name="log", bucket_id='in.c-keboolasheets', file_path=f'app/static/init_log.csv', primary_key=['table_id', 'log_time', 'user', 'new'])
-    #         print("Table created")
-    #         st.session_state["log-exists"] = True
+    if "user_name" not in st.session_state:
+        st.session_state['user_name'] = None
+    
+    if "save_requested" not in st.session_state:
+        st.session_state["save_requested"] = False
 
 def update_session_state(table_id):
     with st.spinner('Loading ...'):
         st.session_state['selected-table'] = table_id
         st.session_state['data'] = get_dataframe(st.session_state['selected-table'])
-        st.session_state['data_load_time_table'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     st.rerun()
      
-
 def display_table_card(row):
     card(
         title=row["displayName"],
-        # title=row["displayName"].upper(),  
-        # text=[f"Primary key: {row['primaryKey']}", f"Table ID: {row['table_id']}", f"Updated at: {row['lastImportDate']}", f"Created at: {row['created']}", f"Rows count: {str(row['rowsCount'])}"],
-        text=[f"Table ID: {row['table_id']}", f"Created at: {split_datetime(row['created'])}", f"Updated at: {split_datetime(row['lastImportDate'])}", f"Rows count: {str(row['rowsCount'])}"],
+        text=[f"Table ID: {row['table_id']}"],
         styles={
             "card": {
                 "width": "100%",
-                "height": "200px",
+                "height": "80px",
                 "box-shadow": "2px 2px 12px rgba(0,0,0,0.1)",
                 "margin": "0px",
                 "flex-direction": "column",  # Stack children vertically
@@ -156,13 +152,6 @@ def ChangeButtonColour(widget_label, font_color, background_color, border_color)
 # Fetch and prepare table IDs and short description
 @st.cache_data(ttl=60)
 
-
-# def fetch_all_ids():
-#    all_tables = client.tables.list()
-#    ids_list = [{'table_id': table["id"], 'displayName': table["displayName"], 'primaryKey': ', '.join(table["primaryKey"]) if table["primaryKey"] else "",
-#                  'lastImportDate': table['lastImportDate'], 'rowsCount': table['rowsCount'], 'created': table['created']} for table in all_tables]
-#    return pd.DataFrame(ids_list)
-
 def fetch_all_ids():
     df = pd.DataFrame()
     bucket_ids = [bucket["id"] for bucket in client.buckets.list()]
@@ -171,12 +160,8 @@ def fetch_all_ids():
         ids_list = [{
             'table_id': table["id"],
             'displayName': table["displayName"],
-            'primaryKey': ', '.join(table["primaryKey"]) if table["primaryKey"] else "",
             'lastImportDate': table['lastImportDate'],
-            'rowsCount': table['rowsCount'],
-            'created': table['created'],
-            'description': next((item['value'] for item in table["metadata"] if item['key'] == 'KBC.description'), None),
-            'column_metadata': client.tables.detail(table["id"])["columnMetadata"]
+            'created': table['created']
         } for table in tables]
         df_stage = pd.DataFrame(ids_list)
         df = pd.concat([df, df_stage])
@@ -190,19 +175,11 @@ def on_click_uploads():
 def on_click_back():
     st.session_state["upload-tables"] = False
 
-
 # Function to display a table section
 # table_name, table_id ,updated,created
 def display_table_section(row):
     with st.container():
-        # st.subheader(f":blue[{table_name}]")
-        # st.caption(table_id)
-        # st.caption(f"Created: {created}")
-        # st.caption(f"Updated: {updated}")
-        # st.markdown("""---""")
-
         display_table_card(row)
-
 
 def display_footer_section():
     left_aligned, space_col, right_aligned = st.columns((2,7,1))
@@ -211,49 +188,40 @@ def display_footer_section():
     # with right_aligned:
     #    st.caption("Version 2.0")
 
-def write_to_keboola(data, table_name, table_path, incremental):
+def write_to_keboola(data, table_name, table_path, purpose):
     """
-    Writes the provided data to the specified table in Keboola Connection,
-    updating existing records as needed.
+    Writes the provided data to the specified table in Keboola Connection, updating existing records as needed.
 
     Args:
         data (pandas.DataFrame): The data to write to the table.
         table_name (str): The name of the table to write the data to.
         table_path (str): The local file path to write the data to before uploading.
-
-    Returns:
-        None
     """
 
     # Write the DataFrame to a CSV file with compression
     data.to_csv(table_path, index=False, compression='gzip')
 
     # Load the CSV file into Keboola, updating existing records
-    client.tables.load(
-        table_id=table_name,
-        file_path=table_path,
-        is_incremental=incremental
-    )
+    if purpose == "reference_table":
+        client.tables.load(
+            table_id=table_name,
+            file_path=table_path,
+            is_incremental=False
+        )
+    elif purpose == "snapshot":
+        kbc_client.tables.load(
+            table_id=table_name,
+            file_path=table_path,
+            is_incremental=True
+        )
 
 def resetSetting():
     st.session_state['selected-table'] = None
-    st.session_state['data'] = None 
+    st.session_state['data'] = None
+    st.session_state["show_downloads"] = False
 
-def write_to_log(data):
-    now = datetime.datetime.now()
-    log_df = pd.DataFrame({
-            'table_id': "in.c-keboolasheets.log",
-            'new': [data],
-            'log_time': now,
-            'user': "PlaceHolderUserID"
-        })
-    log_df.to_csv(f'updated_data_log.csv.gz', index=False, compression='gzip')
-
-    # Load the CSV file into Keboola, updating existing records
-    kbc_client.tables.load(
-        table_id="in.c-keboolasheets.log",
-        file_path=f'updated_data_log.csv.gz',
-        is_incremental=True)
+def toggle_downloads():
+    st.session_state["show_downloads"] = not st.session_state["show_downloads"]
 
 def cast_columns(df):
     """Ensure that columns that should be boolean are explicitly cast to boolean."""
@@ -345,19 +313,16 @@ def check_col_types(df_to_check, col_setting):
     col_setting = {k: v for k, v in col_setting.items() if not re.search("%", v)}
     wanted_keys = tuple(col_setting.keys())
     col_types_dict = dict_filter(col_types_dict, wanted_keys)
-    # st.write(f"Detected column formatting: {col_types_dict}")
     wrong_columns = [k for k in col_types_dict if col_types_dict[k] != col_setting.get(k)]
     return wrong_columns
 
 def modifying_nas(df_for_editing):
-    # df_for_editing = df_for_editing.astype(str)
     mod_df = df_for_editing.replace(r'^(\s*|None|none|NONE|NaN|nan|Null|null|NULL|n\/a|N\/A|<NA>)$', np.nan, regex=True)
     return mod_df
 
 def delete_decimal_zero(df_for_editing):
     for k, v in df_for_editing.dtypes.astype(str).to_dict().items():
         if re.search("(int|float).*", v):
-            # st.write(f"Column name: {k}, Format: {v}")
             df_for_editing[k] = df_for_editing[k].astype(str)
             df_for_editing[k] = df_for_editing[k].replace(r'\.0$', '', regex=True)
     return df_for_editing
@@ -414,6 +379,81 @@ def check_duplicates(df_to_check, cs_setting, pk_setting = []):
         df_to_check = df_to_check[pk_setting]
     duplicity_value = len(df_to_check.duplicated().unique().tolist())
     return duplicity_value
+
+def create_table_info(json_data):
+    table_id = json_data['id']
+    display_name = json_data['displayName']
+    primary_key = ', '.join(json_data['primaryKey'])
+    last_import_date = json_data['lastImportDate']
+    rows_count = json_data['rowsCount']
+    created = json_data['created']
+    # description - KBC.description
+    description = ''
+    for item in json_data['metadata']:
+        if item['key'] == 'KBC.description':         
+            table_setting_str_dict = re.sub("'", '"', re.sub(r'```.*', '', re.sub(r'.*Upload setting:?\s*```\{', '{', item['value'])))
+            description = ', '.join(f"*{key}*: {value}" for key, value in json.loads(table_setting_str_dict).items())
+            break
+    # key (column name) if "case sensitive"
+    case_sensitive_columns = []
+    for column, metadata_list in json_data['columnMetadata'].items():
+        for metadata in metadata_list:
+            if metadata['value'] == 'case sensitive':
+                case_sensitive_columns.append(column)
+    data = {
+        'table_id': [table_id],
+        'displayName': [display_name],
+        'primaryKey': [primary_key],
+        'lastImportDate': [last_import_date],
+        'rowsCount': [rows_count],
+        'created': [created],
+        'description': [description],
+        'case_sensitive_columns': [case_sensitive_columns]
+    }
+    df = pd.DataFrame(data)
+    return df
+
+def prepare_downloaded_data():
+    downloaded_data = cast_columns(st.session_state['data'])
+    downloaded_data = delete_null_rows(modifying_nas(downloaded_data))
+    downloaded_data = delete_decimal_zero(downloaded_data)
+    return downloaded_data
+
+def generate_download_file(data, file_format):
+    buffer = io.BytesIO() if file_format == "xlsx" else io.StringIO()
+    if file_format == "csv":
+        data.to_csv(buffer, index=False)
+        mime = 'text/csv'
+        ext = "csv"
+    elif file_format == "tsv":
+        data.to_csv(buffer, sep='\t', index=False)
+        mime = 'text/tab-separated-values'
+        ext = "txt"
+    elif file_format == "xlsx":
+        with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+            data.to_excel(writer, index=False)
+        mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        ext = "xlsx"
+    else:
+        return None, None, None
+    return buffer.getvalue(), mime, ext
+    
+# Protected saving & snapshoting
+def get_now_utc():
+    now_utc = datetime.datetime.now(dttimezone.utc)
+    return now_utc.strftime('%Y-%m-%d, %H:%M:%S')
+
+def get_table_name_suffix():
+    headers = st.context.headers
+    return re.sub('-', '_', headers['Host'].split('.')[0])
+
+def get_password_dataframe(table_name):
+    kbc_client.tables.export_to_file(table_id = table_name, path_name='.')
+    return pd.read_csv(f"./{table_name.split('.')[2]}", low_memory=False)
+
+def get_username_by_password(password, df_passwords):
+    match = df_passwords.loc[df_passwords['password'] == password, 'name']
+    return match.iloc[0] if not match.empty else None
         
 # Display tables
 init()
@@ -421,7 +461,6 @@ st.session_state["tables_id"] = fetch_all_ids()
 
 if st.session_state['selected-table'] is None and (st.session_state['upload-tables'] is None or st.session_state['upload-tables'] == False):
     #LOGO
-   
       # Place an image in the first column
     col1, col2, col3 = st.columns((1,7,2))
     with col1:
@@ -436,12 +475,9 @@ if st.session_state['selected-table'] is None and (st.session_state['upload-tabl
 
         st.markdown(hide_img_fs, unsafe_allow_html=True)
 
-    with col3:
-        st.markdown(f"**Data Freshness:** \n {st.session_state['data_load_time_overview']}")
-
     #Keboola title
-    st.markdown("""<h1 style="font-size:32px;"><span style="color:#1F8FFF;">Keboola</span> Data Editor</h1>""", unsafe_allow_html=True)
-    st.info('Select the table you want to edit. If the data is not up-to-data, click on the Reload Data button. Data freshness is displayed in the right corner.', icon="ℹ️")
+    st.markdown("""<h1><span style="color:#1F8FFF;">Keboola</span> Data Editor</h1>""", unsafe_allow_html=True)
+    st.info('Select the table you want to edit. If the data is not up-to-data, click on the Reload Data button.', icon="ℹ️")
 
     # Title of the Streamlit app
     st.subheader("Tables")
@@ -461,7 +497,7 @@ if st.session_state['selected-table'] is None and (st.session_state['upload-tabl
         sort_option = st.selectbox("Sort By Name", ["Sort By Name", "Sort By Date Created", "Sort By Date Updated"],label_visibility="collapsed")
     
     with col_upload:
-        if st.button("Upload New Data", on_click=on_click_uploads, use_container_width = True):
+        if st.button("Upload Data", on_click=on_click_uploads, use_container_width = True):
             pass
 
     # Filtrace dat podle vyhledávacího dotazu
@@ -483,114 +519,65 @@ if st.session_state['selected-table'] is None and (st.session_state['upload-tabl
         display_table_section(row)
         # row['displayName'], row['table_id'],row['lastImportDate'],row['created']
 
-elif st.session_state['selected-table']is not None:
+elif st.session_state['selected-table'] is not None:
     col1,col2,col4= st.columns((2,7,2))
     with col1:
         st.button(":gray[:arrow_left: Back to Tables]", on_click=resetSetting, type="secondary")
-    with col4:
-         st.markdown(f"**Data Freshness:** \n {st.session_state['data_load_time_table']}")
 
     # Data Editor
     st.title("Data Editor")
   
     # Info
-    st.info('After clicking the Save Data button, the data will be sent to Keboola Storage using a full load. If the data is not up-to-date, click on the Reload Data button. Data freshness is displayed in the right corner.', icon="ℹ️")
-    # Reload Button
-    if st.button("Reload Data", key="reload-table",use_container_width=True ):
-            st.session_state["tables_id"] = fetch_all_ids()
-            st.toast('Tables List Reloaded!', icon = "✅")
+    st.info('After clicking the Save Data button, the data will be sent to Keboola Storage using a FULL LOAD.', icon="ℹ️")
 
     #Select Box
     option = st.selectbox("Select Table", st.session_state["tables_id"], index=None, placeholder="Select table",label_visibility="collapsed")
-    
     if option:
         st.session_state['selected-table'] = option
         st.session_state['data'] = get_dataframe(st.session_state['selected-table'])
        
-
     # Expander with info about table
     with st.expander("Table Info"):
-         # Filter the DataFrame to find the row for the selected table_id
-        selected_row = st.session_state["tables_id"][st.session_state["tables_id"]['table_id'] == st.session_state['selected-table']]
+        # Filter the DataFrame to find the row for the selected table_id
+        table_detail_json = client.tables.detail(st.session_state['selected-table'])
+        selected_row = create_table_info(table_detail_json)
+        # Convert the row to a Series to facilitate access
+        selected_row = selected_row.iloc[0]
+        st.markdown(f"**Table ID:** {selected_row['table_id']}")
+        st.markdown(f"**Created at:** {split_datetime(selected_row['created'])}")
+        st.markdown(f"**Updated at:** {split_datetime(selected_row['lastImportDate'])}")
+        st.markdown(f"**Primary Key:** {selected_row.get('primaryKey', 'N/A')}")
+        st.markdown(f"**Table Setting:** {selected_row['description']}")
+        case_sensitive_columns = selected_row['case_sensitive_columns']
+        if case_sensitive_columns:
+            st.markdown(f"**Case Sensitive Columns:** {', '.join(case_sensitive_columns)}")
+        st.markdown(f"**Rows Count:** {selected_row['rowsCount']}")
 
-        # Ensure only one row is selected
-        if len(selected_row) == 1:
-            # Convert the row to a Series to facilitate access
-            selected_row = selected_row.iloc[0]
-            # st.write(selected_row)
-            # Displaying data in bold using Markdown
-            st.markdown(f"**Table ID:** {selected_row['table_id']}")
-            # dt_created = selected_row['created']
-            # st.markdown(f"**Created:** {dt_created.split('T')[0]}, {dt_created.split('T')[1]}")
-            st.markdown(f"**Created at:** {split_datetime(selected_row['created'])}")
-            # st.markdown(f"**Updated:** {selected_row.get('lastImportDate', 'N/A')}")
-            st.markdown(f"**Updated at:** {split_datetime(selected_row['lastImportDate'])}")
-            st.markdown(f"**Primary Key:** {selected_row.get('primaryKey', 'N/A')}")
-            description = selected_row['description']
-            # table_setting_str_dict = re.sub(r'```.*', '', re.sub(r'.*Upload setting:?\s*```\{', '{', description))
-            table_setting_str_dict = re.sub("'", '"', re.sub(r'```.*', '', re.sub(r'.*Upload setting:?\s*```\{', '{', description)))
-            table_setting_str = ', '.join(f"*{key}*: {value}" for key, value in json.loads(table_setting_str_dict).items())
-            st.markdown(f"**Table Setting:** {table_setting_str}")
-            case_insensitive_columns = [outer_key for outer_key, items in selected_row['column_metadata'].items() if any(item.get('value') == 'case sensitive' for item in items)]
-            if case_insensitive_columns:
-                st.markdown(f"**Case Sensitive Columns:** {', '.join(case_insensitive_columns)}")
-            st.markdown(f"**Rows Count:** {selected_row['rowsCount']}")
+    st.button("Download Data", on_click=toggle_downloads, help="Click to show download options")
 
-    # Download table as CSV, TSV or Excel
-    downloaded_data = cast_columns(st.session_state['data'])
-    downloaded_data = delete_null_rows(modifying_nas(downloaded_data))
-    downloaded_data = delete_decimal_zero(downloaded_data)
-    downloaded_file_name = split_table_id(selected_row['table_id'])[1]
-        
-    # Uložení dataframe do CSV v paměti
-    csv_buffer = io.StringIO()
-    downloaded_data.to_csv(csv_buffer, index=False)
-    csv_data = csv_buffer.getvalue()
+    # and st.session_state.get('data') is not None:
+    if st.session_state["show_downloads"]:
+        downloaded_file_name = split_table_id(st.session_state['selected-table'])[1]
+        col5, col6, col7 = st.columns([1, 1, 6])
+        with col5:
+            data, mime, ext = generate_download_file(prepare_downloaded_data(), "csv")
+            st.download_button(label="Download CSV", data=data, file_name=f"{downloaded_file_name}.{ext}", mime=mime)
+    
+        with col6:
+            data, mime, ext = generate_download_file(prepare_downloaded_data(), "tsv")
+            st.download_button(label="Download TSV", data=data, file_name=f"{downloaded_file_name}.{ext}", mime=mime)
+    
+        with col7:
+            data, mime, ext = generate_download_file(prepare_downloaded_data(), "xlsx")
+            st.download_button(label="Download XLSX", data=data, file_name=f"{downloaded_file_name}.{ext}", mime=mime)
 
-    # Uložení dataframe do TSV v paměti
-    tsv_buffer = io.StringIO()
-    downloaded_data.to_csv(tsv_buffer, sep='\t', index=False)
-    tsv_data = tsv_buffer.getvalue()
-
-    # Uložení dataframe do Excelu v paměti
-    xlsx_buffer = io.BytesIO()
-    with pd.ExcelWriter(xlsx_buffer, engine='openpyxl') as writer:
-        downloaded_data.to_excel(writer, index=False)
-    xlsx_data = xlsx_buffer.getvalue()
-
-    col5, col6, col7 = st.columns([1, 1, 6])
-
-    with col5:
-        st.download_button(
-            label="Download CSV",
-            data=csv_data,
-            file_name=f"{downloaded_file_name}.csv",
-            mime='text/csv'
-        )
-
-    with col6:
-        st.download_button(
-            label="Download TSV",
-            data=tsv_data,
-            file_name=f"{downloaded_file_name}.txt",
-            mime='text/tab-separated-values'
-        )
-
-    with col7:
-        st.download_button(
-            label="Download XLSX",
-            data=xlsx_data,
-            file_name=f"{downloaded_file_name}.xlsx",
-            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-        
-    edited_data = st.data_editor(st.session_state["data"], num_rows="dynamic", height=500, use_container_width=True,
-                                 column_config=create_column_config(st.session_state["data"]))
+    
+    edited_data = st.data_editor(st.session_state['data'], num_rows="dynamic", height=500, use_container_width=True,
+                                 column_config=create_column_config(st.session_state['data']))
 
     if st.button("Save Data", key="save-data-tables"):
-        with st.spinner('Saving Data...'):
+        with st.spinner('Validating Metadata...'):
             edited_data = cast_columns(edited_data)
-            # st.write(edited_data)
             edited_data = delete_null_rows(modifying_nas(edited_data))
             edited_data = delete_decimal_zero(edited_data)
             
@@ -620,139 +607,165 @@ elif st.session_state['selected-table']is not None:
                 st.error("The table contains duplicate rows. Please remove them before proceeding.")
             else:                            
                 if date_setting:
-                    st.session_state["data"] = checking_date[1]
-                    edited_data = modifying_nas(checking_date[1])
+                    # st.session_state['data'] = checking_date[1]
+                    st.session_state["edited_data"] = modifying_nas(checking_date[1])
                 else:
-                    st.session_state["data"] = edited_data
-                edited_data = modifying_nas(edited_data)
-                # is_incremental = bool(selected_row.get('primaryKey', False))   
-                write_to_keboola(edited_data, st.session_state["selected-table"],f'updated_data.csv.gz', False)
-                st.success('Data Updated!', icon = "🎉")
-                st.cache_data.clear()
+                    st.session_state["edited_data"] = modifying_nas(edited_data)
+                st.success("Metadata validated successfully!", icon = "🎉")
+                st.session_state["save_requested"] = True
+                st.rerun()
+
+    # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
+    if logged_user == 'True':
+        if st.session_state["save_requested"] and st.session_state['user_name'] == None:
+            if "passwords" not in st.session_state:
+                st.session_state['passwords'] = get_password_dataframe(f"in.c-reference_tables_metadata.passwords_{get_table_name_suffix()}")
+            password_input = st.text_input("Enter password:", type="password")
+            if st.button("Login and Save Data"):
+                st.session_state['user_name'] = get_username_by_password(password_input, st.session_state['passwords'])
+                if st.session_state['user_name'] != None:
+                    st.success(f"✅ Password is correct. Hi, {st.session_state['user_name']}. You are logged in!")
+                else:
+                    st.error("Invalid password")
+    else:
+        st.session_state['user_name'] = "Anonymous Squirrel"
+
+    # Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, tak se uloží
+    if st.session_state['user_name'] != None and st.session_state["save_requested"]:
+        try:
+            with st.spinner('Saving table...'): 
+                write_to_keboola(st.session_state["edited_data"], st.session_state["selected-table"],'updated_data.csv.gz', "reference_table")
+                st.success("Table saved successfully!", icon = "🎉")
+            if saving_snapshot == "True":
+                with st.spinner('Saving snapshot...'):
+                    df_serialized = st.session_state["edited_data"].to_json(orient="records")
+                    df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table_id": [st.session_state["selected-table"]], "data": [df_serialized]})
+                    write_to_keboola(df_snapshot, f"in.c-reference_tables_metadata.snapshots_{get_table_name_suffix()}",'snapshot_data.csv.gz', "snapshot")
+                    st.success("Snapshot saved successfully!", icon = "🎉")
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
+        # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
+        st.session_state["save_requested"] = False
+        st.session_state["data"] = st.session_state["edited_data"]
+        st.cache_data.clear()
+        time.sleep(3)
+        st.rerun()
 
     ChangeButtonColour('Save Data', '#FFFFFF', '#1EC71E','#1EC71E')
 elif st.session_state['upload-tables']:
     if st.button(":gray[:arrow_left: Go back]", on_click=on_click_back):
         pass
     st.title('Import Data into :blue[Keboola Storage]')
+    st.info('After clicking the Upload Data button, the data will be sent to Keboola Storage using a FULL LOAD.', icon="ℹ️")
     # List and display available buckets
     buckets = client.buckets.list()
-    # bucket_names = [bucket['id'] for bucket in buckets]
     bucket_names = ["Choose a bucket"]  # Add option to choose a bucket at the beginning
     bucket_names.extend([bucket['id'] for bucket in buckets])
-    selected_bucket = st.selectbox('Choose a bucket', bucket_names, placeholder="Choose an option")
+    if len(buckets) == 1:
+        selected_bucket = [bucket['id'] for bucket in buckets][0]
+    else:
+        selected_bucket = st.selectbox('Choose a bucket', bucket_names, placeholder="Choose an option")
 
     if selected_bucket and selected_bucket != "Choose a bucket":
         # File uploader
         uploaded_file = st.file_uploader("Upload a file", type=['csv', 'xlsx'])
-            
         # List and display available tables
         tables = client.tables.list()
         table_names = ["Choose a table"]  # Add option to choose a table at the beginning
         table_names.extend([re.sub('.*\.', '', table["id"]) for table in tables if re.search(f"^{selected_bucket}\.", table["id"])])
         table_name = st.selectbox('Choose a table', table_names, placeholder="Choose an option")
-        # table_name = st.text_input("Enter table name")
-
-        # Main button for an action
-        if 'action_clicked' not in st.session_state:
-            st.session_state.action_clicked = False
 
         # Upload button
-        if st.button('Upload'):
-            st.session_state.action_clicked = True
-
-        if st.session_state.action_clicked:
-            if selected_bucket != "Choose a bucket" and uploaded_file and table_name != "Choose a table":
-                # string_check = '^[a-zA-Z-_\d]*$'
-                # check a valid table name
-                # if bool(re.match(string_check, table_name)) == False:
-                #    st.error('Error: In a table name are allowed only alphanumeric characters without diacritical marks, dashes, and underscores.')
-                # Check if the table name already exists in the selected bucket
-                existing_tables = client.buckets.list_tables(bucket_id=selected_bucket)
-                existing_table_names = [table['name'] for table in existing_tables]
-                if table_name in existing_table_names:
-                    st.warning(f"Please check the table name again. The table '{table_name}' will be completely overwritten by your file!", icon="⚠️")
-                    if st.button('I know what I am doing...'):
-                        table_id = selected_bucket + '.' + table_name
-                        # show column formatting settings
-                        column_setting = get_setting(token, selected_bucket, table_id)[0]
-                        # st.write(f"Required column setting: {column_setting}")
-                        format_setting = split_dict(column_setting, 2)
-                        # st.write(f"Required column formatting: {format_setting}")
-                        null_cells_setting = split_dict(column_setting, 1)
-                        # st.write(f"Required not null cells setting: {null_cells_setting}")
-                        case_sensitive_setting = get_setting(token, selected_bucket, table_id)[3]
-                        # st.write(f"Required case sensitive setting: {case_sensitive_setting}")
-                        primary_key_setting = get_setting(token, selected_bucket, table_id)[1]
-                        # st.write(f"Required primary key setting: {primary_key_setting}")
-                        date_setting = date_setting(column_setting)
-                        # st.write(f"Required date setting: {date_setting}")
-
-                        st.success('The action has been confirmed successfully!', icon = "🎉")
-                        # Resetování stavu
-                        st.session_state.action_clicked = False
-                        if st.session_state.action_clicked == False:
-                            # Save the uploaded file to a temporary path
-                            temp_file_path = f"/tmp/{uploaded_file.name}"
-                            if Path(uploaded_file.name).suffix == '.csv':
-                                file_content = uploaded_file.read()
-                                try:
-                                    df = pd.read_csv(io.BytesIO(file_content), sep=None, engine='python', encoding='utf-8-sig')
-                                except:
-                                    result = from_bytes(file_content).best()
-                                    detected_encoding = result.encoding
-                                    df = pd.read_csv(io.BytesIO(file_content), sep=None, engine='python', encoding=detected_encoding)
-                            else:
-                                df=pd.read_excel(uploaded_file)
-                            if date_setting:
-                                checking_date = check_date_format(modifying_nas(df), date_setting)
-                        
-                            missing_columns = check_columns_diff(get_setting(token, selected_bucket, table_id)[2], df.columns.values.tolist())[0]
-                            extra_columns = check_columns_diff(get_setting(token, selected_bucket, table_id)[2], df.columns.values.tolist())[1]
-
-                            # st.write(f"Columns in dataframe: {df.columns.values.tolist()}")
-                            if missing_columns:
-                                st.error(f"Some columns are missing in the file. Affected columns: {', '.join(missing_columns)}. The column names are case-sensitive. Please edit it before proceeding.")
-                            elif extra_columns:
-                                st.error(f"There are extra columns. Adding new columns is not allowed. Affected columns: {', '.join(extra_columns)}. The column names are case-sensitive. If you want to add new columns, please contact the analytics team.")
-                            elif check_null_rows(modifying_nas(df)):
-                                st.error("The file contains null rows. Please remove them before proceeding.")
-                            elif check_col_types(df, format_setting):
-                                st.error(f"The file contains data in the wrong format. Affected columns: {', '.join(check_col_types(df, format_setting))}. Please edit it before proceeding.")
-                            elif date_setting and checking_date[0]:
-                                st.error(f"The file contains date in the wrong format. Affected columns: {', '.join(checking_date[0])}. Please edit it before proceeding.")         
-                            elif check_null_cells(modifying_nas(df), null_cells_setting):
-                                st.error(f"The file contains data with null values. Affected columns: {', '.join(check_null_cells(modifying_nas(df), null_cells_setting))}. Please edit it before proceeding.")
-                            elif primary_key_setting and check_duplicates(df, case_sensitive_setting, primary_key_setting) == 2:
-                                st.error(f"The table contains columns with duplicate values. Affected columns: {', '.join(primary_key_setting)}. Please edit it before proceeding.")
-                            elif check_duplicates(df, case_sensitive_setting) == 2:
-                                st.error("The table contains duplicate rows. Please remove them before proceeding.")
-                            else:
-                                if date_setting:
-                                    df = checking_date[1]
-                                else:
-                                    df = modifying_nas(df)
-                                df.to_csv(temp_file_path, index=False)
-                                try:
-                                    with st.spinner('Uploading...'):
-                                        client.tables.load(table_id=table_id, file_path=temp_file_path, is_incremental=False)
-                                        st.session_state['upload-tables'] = False
-                                        st.session_state['selected-table'] = None
-                                        # st.session_state['selected-table'] = selected_bucket+"."+table_name
-                                        time.sleep(2)
-                                    st.success('File uploaded and table created successfully!', icon = "🎉")
-                                    st.cache_data.clear()
-                                    st.session_state["tables_id"] = fetch_all_ids()
-                                    time.sleep(2)
-                                    st.rerun()
-
-                                except Exception as e:
-                                    st.error(f"Error: {str(e)}")
-                    else:
-                        st.write("Waiting for a confirmation...")
+        if st.button('Upload Data'):
+            with st.spinner('Validating Metadata...'):
+                if selected_bucket == "Choose a bucket" or not uploaded_file or table_name == "Choose a table":
+                    st.error('Error: Please upload a file and select a table name.') 
                 else:
-                    st.error("It is not allowed to create new tables. You need to overwrite the existing one. If you want to create a new table, contact the analytics team.")
-            else:
-                st.error('Error: Please upload a file and select a table name.') 
+                    table_id = selected_bucket + '.' + table_name
+                    st.session_state["uploaded_table_id"] = table_id
+                    column_setting = get_setting(token, selected_bucket, table_id)[0]
+                    format_setting = split_dict(column_setting, 2)
+                    null_cells_setting = split_dict(column_setting, 1)
+                    case_sensitive_setting = get_setting(token, selected_bucket, table_id)[3]
+                    primary_key_setting = get_setting(token, selected_bucket, table_id)[1]
+                    date_setting = date_setting(column_setting)
+                    if Path(uploaded_file.name).suffix == '.csv':
+                        file_content = uploaded_file.read()
+                        try:
+                            df = pd.read_csv(io.BytesIO(file_content), sep=None, engine='python', encoding='utf-8-sig')
+                        except:
+                            result = from_bytes(file_content).best()
+                            detected_encoding = result.encoding
+                            df = pd.read_csv(io.BytesIO(file_content), sep=None, engine='python', encoding=detected_encoding)
+                    else:
+                        df=pd.read_excel(uploaded_file)
+                    if date_setting:
+                        checking_date = check_date_format(modifying_nas(df), date_setting)
+                
+                    missing_columns = check_columns_diff(get_setting(token, selected_bucket, table_id)[2], df.columns.values.tolist())[0]
+                    extra_columns = check_columns_diff(get_setting(token, selected_bucket, table_id)[2], df.columns.values.tolist())[1]
+    
+                    if missing_columns:
+                        st.error(f"Some columns are missing in the file. Affected columns: {', '.join(missing_columns)}. The column names are case-sensitive. Please edit it before proceeding.")
+                    elif extra_columns:
+                        st.error(f"There are extra columns. Adding new columns is not allowed. Affected columns: {', '.join(extra_columns)}. The column names are case-sensitive. If you want to add new columns, please contact the analytics team.")
+                    elif check_null_rows(modifying_nas(df)):
+                        st.error("The file contains null rows. Please remove them before proceeding.")
+                    elif check_col_types(df, format_setting):
+                        st.error(f"The file contains data in the wrong format. Affected columns: {', '.join(check_col_types(df, format_setting))}. Please edit it before proceeding.")
+                    elif date_setting and checking_date[0]:
+                        st.error(f"The file contains date in the wrong format. Affected columns: {', '.join(checking_date[0])}. Please edit it before proceeding.")         
+                    elif check_null_cells(modifying_nas(df), null_cells_setting):
+                        st.error(f"The file contains data with null values. Affected columns: {', '.join(check_null_cells(modifying_nas(df), null_cells_setting))}. Please edit it before proceeding.")
+                    elif primary_key_setting and check_duplicates(df, case_sensitive_setting, primary_key_setting) == 2:
+                        st.error(f"The table contains columns with duplicate values. Affected columns: {', '.join(primary_key_setting)}. Please edit it before proceeding.")
+                    elif check_duplicates(df, case_sensitive_setting) == 2:
+                        st.error("The table contains duplicate rows. Please remove them before proceeding.")
+                    else:
+                        if date_setting:
+                            st.session_state['data'] = checking_date[1]
+                        else:
+                            st.session_state['data'] = modifying_nas(df)
+                        st.success("File uploaded and metadata validated successfully!", icon = "🎉")
+                        st.session_state["save_requested"] = True
+                        st.rerun()
+
+        # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
+        if logged_user == 'True':
+            if st.session_state["save_requested"] and st.session_state['user_name'] == None:
+                password_input = st.text_input("Enter password:", type="password")
+                if "passwords" not in st.session_state:
+                    st.session_state['passwords'] = get_password_dataframe(f"in.c-reference_tables_metadata.passwords_{get_table_name_suffix()}")
+                if st.button("Login and Save Data"):
+                    st.session_state['user_name'] = get_username_by_password(password_input, st.session_state['passwords'])
+                    if st.session_state['user_name'] != None:
+                        st.success(f"✅ Password is correct. Hi, {st.session_state['user_name']}. You are logged in!")
+                    else:
+                        st.error("Invalid password.")      
+        else:
+            st.session_state['user_name'] = "Anonymous Squirrel"
+
+        # Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, tak se uloží
+        if st.session_state['user_name'] != None and st.session_state["save_requested"]:
+            try:
+                with st.spinner('Saving table...'):
+                    write_to_keboola(st.session_state['data'], st.session_state["uploaded_table_id"],'uploaded_data.csv.gz', "reference_table") 
+                st.success('Table saved successfully!', icon = "🎉")
+                if saving_snapshot == "True":
+                    with st.spinner('Saving snapshot...'):
+                        df_serialized = st.session_state['data'].to_json(orient="records")
+                        df_snapshot = pd.DataFrame({"user_name": [st.session_state['user_name']], "timestamp": [get_now_utc()], "table_id": [st.session_state["uploaded_table_id"]], "data": [df_serialized]})
+                        write_to_keboola(df_snapshot, f"in.c-reference_tables_metadata.snapshots_{get_table_name_suffix()}",'snapshot_data.csv.gz', "snapshot")
+                        st.success("Snapshot saved successfully!", icon = "🎉")
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
+            # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
+            st.session_state["save_requested"] = False
+            st.session_state['upload-tables'] = False
+            st.session_state['selected-table'] = st.session_state["uploaded_table_id"]
+            st.session_state["uploaded_table_id"] = None
+            st.cache_data.clear()
+            time.sleep(3)
+            st.rerun()
 
 display_footer_section()

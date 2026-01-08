@@ -23,6 +23,7 @@ token = st.secrets["kbc_storage_token"]
 kbc_url = url = st.secrets["kbc_url"]
 kbc_token = st.secrets["kbc_token"]
 LOGO_IMAGE_PATH = os.path.abspath("./app/static/keboola.png")
+settings_table_id = f"in.c-reference_tables_metadata.settings_{get_table_name_suffix()}"
 
 # Initialize Client
 client = Client(kbc_url, token)
@@ -244,7 +245,8 @@ def get_setting(tkn, kbc_bucket_id, kbc_table_id):
     case_sensitive = {}
     return col_setting, primary_key, table_columns, case_sensitive
 
-def get_column_settings(settings_table_id, selected_table_id, settings_table_name):
+def get_column_settings(tkn, settings_table_id, selected_table_id, settings_table_name):
+    client = Client('https://connection.eu-central-1.keboola.com', tkn)
     client.tables.export_to_file(table_id=settings_table_id, path_name='.')
     with open(f'./{settings_table_name}', mode='r', encoding='utf-8') as in_file:
         lazy_lines = (line.replace('\0', '') for line in in_file)
@@ -592,7 +594,8 @@ elif st.session_state['selected-table'] is not None:
             
             selected_bucket = split_table_id(selected_row['table_id'])[0]
             # show column formatting settings
-            column_setting = get_setting(token, selected_bucket, selected_row['table_id'])[0]
+            # column_setting = get_setting(token, selected_bucket, selected_row['table_id'])[0]
+            column_setting = get_column_settings(settings_table_id, selected_row['table_id'], settings_{get_table_name_suffix())[0]
             # st.write(f"Required column setting: {column_setting}")
             format_setting = split_dict(column_setting, 2)
             # st.write(f"Required column formatting: {format_setting}")

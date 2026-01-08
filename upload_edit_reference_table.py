@@ -236,26 +236,35 @@ def cast_columns(df):
         
 def get_setting(tkn, kbc_bucket_id, kbc_table_id):
     c = Client('https://connection.eu-central-1.keboola.com', tkn)
-    description = c.tables.detail(kbc_table_id)["metadata"][0]["value"]
+    # description = c.tables.detail(kbc_table_id)["metadata"][0]["value"]
     table_columns = c.tables.detail(kbc_table_id)["columns"]
-    col_metadata = c.tables.detail(kbc_table_id)["columnMetadata"]
+    # col_metadata = c.tables.detail(kbc_table_id)["columnMetadata"]
     primary_key = c.tables.detail(kbc_table_id)["primaryKey"]
-    if 'Upload setting' in description:
-        description = description.replace('\n','')
-        description = re.sub(r'.*Upload setting:?\s*```\{', '{', description)
-        description = re.sub(r'```.*', '', description)
-        description = re.sub(r"'", '"', description)
-        col_setting = re.sub(r"\}.*", '}', description)
-        col_setting = json.loads(col_setting)
-    else:
-        col_setting = {}
+    col_setting = {}
     case_sensitive = {}
-    for col in table_columns:
-        case_sensitive[col] = ''
-        for k, v in col_metadata.items():
-            if col == k and v[0]["value"] == 'case sensitive':
-                case_sensitive[col] = v[0]["value"]
     return col_setting, primary_key, table_columns, case_sensitive
+
+def get_column_settings(settings_table_id, selected_table_id, settings_table_name):
+    client.tables.export_to_file(table_id=settings_table_id, path_name='.')
+    with open(f'./{settings_table_name}', mode='r', encoding='utf-8') as in_file:
+        lazy_lines = (line.replace('\0', '') for line in in_file)
+        reader = csv.reader(lazy_lines, lineterminator='\n')
+        header = next(reader)
+        for row in reader:
+            if row[0] == selected_table_id:
+                if row[1]:
+                    column_setting = json.loads("{" + row[1] + "}")
+                else:
+                    column_setting = {}
+                if row[2]:
+                    case_sensitive_setting = row[2]
+                    keys = row[2].split(', ')
+                    case_sensitive_setting = {key: "case sensitive" for key in keys}
+                else:
+                    case_sensitive_setting = {}
+                return column_setting, case_sensitive_setting
+            else:
+                print("Není nastaveno.")
         
 def check_columns_diff(current_columns, file_columns):
     missing_columns = [x for x in current_columns if x not in set(file_columns)]

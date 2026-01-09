@@ -398,7 +398,7 @@ def create_table_info(json_data, column_setting, case_sensitive_setting):
     last_import_date = json_data['lastImportDate']
     rows_count = json_data['rowsCount']
     created = json_data['created']
-    description = ''
+    # description = ''
     # for item in json_data['metadata']:
     #     if item['key'] == 'KBC.description':         
     #         table_setting_str_dict = re.sub("'", '"', re.sub(r'```.*', '', re.sub(r'.*Upload setting:?\s*```\{', '{', item['value'])))
@@ -411,7 +411,7 @@ def create_table_info(json_data, column_setting, case_sensitive_setting):
     #     for metadata in metadata_list:
     #         if metadata['value'] == 'case sensitive':
     #             case_sensitive_columns.append(column)
-    case_sensitive_columns = ', '.join(f"{key}" for key, value in case_sensitive_setting.items())
+    case_sensitive_columns = ', '.join(f"{key}" for key in case_sensitive_setting.keys())
     data = {
         'table_id': [table_id],
         'displayName': [display_name],

@@ -593,7 +593,7 @@ elif st.session_state['selected-table'] is not None:
             edited_data = cast_columns(edited_data)
             edited_data = delete_null_rows(modifying_nas(edited_data))
             edited_data = delete_decimal_zero(edited_data)
-            st.info(selected_row['table_id'])
+            # st.info(selected_row['table_id'])
             selected_bucket = split_table_id(selected_row['table_id'])[0]
             # show column formatting settings
             # column_setting = get_setting(token, selected_bucket, selected_row['table_id'])[0]

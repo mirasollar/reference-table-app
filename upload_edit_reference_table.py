@@ -553,6 +553,7 @@ elif st.session_state['selected-table'] is not None:
     with st.expander("Table Info"):
         # Filter the DataFrame to find the row for the selected table_id
         table_detail_json = client.tables.detail(st.session_state['selected-table'])
+        st.info(table_detail_json )
         selected_row = create_table_info(table_detail_json)
         # Convert the row to a Series to facilitate access
         selected_row = selected_row.iloc[0]

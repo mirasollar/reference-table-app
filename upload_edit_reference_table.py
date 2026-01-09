@@ -564,9 +564,9 @@ elif st.session_state['selected-table'] is not None:
         st.markdown(f"**Updated at:** {split_datetime(selected_row['lastImportDate'])}")
         st.markdown(f"**Primary Key:** {selected_row.get('primaryKey', 'N/A')}")
         st.markdown(f"**Table Setting:** {selected_row['description']}")
-        case_sensitive_columns = selected_row['case_sensitive_columns']
-        if case_sensitive_columns:
-            st.markdown(f"**Case Sensitive Columns:** {', '.join(case_sensitive_columns)}")
+        # case_sensitive_columns = selected_row['case_sensitive_columns']
+        if selected_row['case_sensitive_columns']:
+            st.markdown(f"**Case Sensitive Columns:** {selected_row['case_sensitive_columns']}")
         st.markdown(f"**Rows Count:** {selected_row['rowsCount']}")
 
     st.button("Download Data", on_click=toggle_downloads, help="Click to show download options")

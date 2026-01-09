@@ -601,7 +601,8 @@ elif st.session_state['selected-table'] is not None:
             # st.write(f"Required column formatting: {format_setting}")
             null_cells_setting = split_dict(column_setting, 1)
             # st.write(f"Required not null cells setting: {null_cells_setting}")
-            case_sensitive_setting = get_setting(token, selected_bucket, selected_row['table_id'])[3]
+            # case_sensitive_setting = get_setting(token, selected_bucket, selected_row['table_id'])[3]
+            case_sensitive_setting = get_column_settings(settings_table_id, selected_row['table_id'], settings_{get_table_name_suffix())[1]
             # st.write(f"Required case sensitive setting: {case_sensitive_setting}")
             primary_key_setting = get_setting(token, selected_bucket, selected_row['table_id'])[1]
             # st.write(f"Required primary key setting: {primary_key_setting}")
@@ -695,10 +696,12 @@ elif st.session_state['upload-tables']:
                 else:
                     table_id = selected_bucket + '.' + table_name
                     st.session_state["uploaded_table_id"] = table_id
-                    column_setting = get_setting(token, selected_bucket, table_id)[0]
+                    # column_setting = get_setting(token, selected_bucket, table_id)[0]
+                    column_setting = get_column_settings(settings_table_id, selected_row['table_id'], settings_{get_table_name_suffix())[0]
                     format_setting = split_dict(column_setting, 2)
                     null_cells_setting = split_dict(column_setting, 1)
-                    case_sensitive_setting = get_setting(token, selected_bucket, table_id)[3]
+                    # case_sensitive_setting = get_setting(token, selected_bucket, table_id)[3]
+                    case_sensitive_setting = get_column_settings(settings_table_id, selected_row['table_id'], settings_{get_table_name_suffix())[1]
                     primary_key_setting = get_setting(token, selected_bucket, table_id)[1]
                     date_setting = date_setting(column_setting)
                     if Path(uploaded_file.name).suffix == '.csv':

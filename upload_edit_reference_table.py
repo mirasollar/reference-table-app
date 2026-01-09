@@ -391,26 +391,27 @@ def check_duplicates(df_to_check, cs_setting, pk_setting = []):
     duplicity_value = len(df_to_check.duplicated().unique().tolist())
     return duplicity_value
 
-def create_table_info(json_data):
+def create_table_info(json_data, column_setting, case_sensitive_setting):
     table_id = json_data['id']
     display_name = json_data['displayName']
     primary_key = ', '.join(json_data['primaryKey'])
     last_import_date = json_data['lastImportDate']
     rows_count = json_data['rowsCount']
     created = json_data['created']
-    # description - KBC.description
     description = ''
-    for item in json_data['metadata']:
-        if item['key'] == 'KBC.description':         
-            table_setting_str_dict = re.sub("'", '"', re.sub(r'```.*', '', re.sub(r'.*Upload setting:?\s*```\{', '{', item['value'])))
-            description = ', '.join(f"*{key}*: {value}" for key, value in json.loads(table_setting_str_dict).items())
-            break
-    # key (column name) if "case sensitive"
-    case_sensitive_columns = []
-    for column, metadata_list in json_data['columnMetadata'].items():
-        for metadata in metadata_list:
-            if metadata['value'] == 'case sensitive':
-                case_sensitive_columns.append(column)
+    # for item in json_data['metadata']:
+    #     if item['key'] == 'KBC.description':         
+    #         table_setting_str_dict = re.sub("'", '"', re.sub(r'```.*', '', re.sub(r'.*Upload setting:?\s*```\{', '{', item['value'])))
+    #         description = ', '.join(f"*{key}*: {value}" for key, value in json.loads(table_setting_str_dict).items())
+    #         break
+    description = ', '.join(f"*{key}*: {value}" for key, value in column_setting.items())
+    
+    # case_sensitive_columns = []
+    # for column, metadata_list in json_data['columnMetadata'].items():
+    #     for metadata in metadata_list:
+    #         if metadata['value'] == 'case sensitive':
+    #             case_sensitive_columns.append(column)
+    case_sensitive_columns = ', '.join(f"{key}" for key, value in case_sensitive_setting.items())
     data = {
         'table_id': [table_id],
         'displayName': [display_name],
@@ -554,7 +555,8 @@ elif st.session_state['selected-table'] is not None:
         # Filter the DataFrame to find the row for the selected table_id
         table_detail_json = client.tables.detail(st.session_state['selected-table'])
         st.info(table_detail_json )
-        selected_row = create_table_info(table_detail_json)
+        table_settings = get_column_settings(kbc_token, settings_table_id, selected_row['table_id'], f"settings_{get_table_name_suffix()}")
+        selected_row = create_table_info(table_detail_json, table_settings[0], table_settings[1])
         # Convert the row to a Series to facilitate access
         selected_row = selected_row.iloc[0]
         st.markdown(f"**Table ID:** {selected_row['table_id']}")

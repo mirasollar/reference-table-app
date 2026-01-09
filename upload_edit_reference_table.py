@@ -458,8 +458,6 @@ def get_table_name_suffix():
     headers = st.context.headers
     return re.sub('-', '_', headers['Host'].split('.')[0])
 
-st.info(f"App name: {get_table_name_suffix()}")
-
 def get_password_dataframe(table_name):
     kbc_client.tables.export_to_file(table_id = table_name, path_name='.')
     return pd.read_csv(f"./{table_name.split('.')[2]}", low_memory=False)
@@ -469,8 +467,6 @@ def get_username_by_password(password, df_passwords):
     return match.iloc[0] if not match.empty else None
 
 settings_table_id = f"in.c-reference_tables_metadata.settings_{get_table_name_suffix()}"
-
-st.info(settings_table_id)
         
 # Display tables
 init()
@@ -601,14 +597,14 @@ elif st.session_state['selected-table'] is not None:
             selected_bucket = split_table_id(selected_row['table_id'])[0]
             # show column formatting settings
             # column_setting = get_setting(token, selected_bucket, selected_row['table_id'])[0]
-            column_setting = get_column_settings(settings_table_id, selected_row['table_id'], f"settings_{get_table_name_suffix()}")[0]
+            column_setting = get_column_settings(token, settings_table_id, selected_row['table_id'], f"settings_{get_table_name_suffix()}")[0]
             # st.write(f"Required column setting: {column_setting}")
             format_setting = split_dict(column_setting, 2)
             # st.write(f"Required column formatting: {format_setting}")
             null_cells_setting = split_dict(column_setting, 1)
             # st.write(f"Required not null cells setting: {null_cells_setting}")
             # case_sensitive_setting = get_setting(token, selected_bucket, selected_row['table_id'])[3]
-            case_sensitive_setting = get_column_settings(settings_table_id, selected_row['table_id'], f"settings_{get_table_name_suffix()}")[1]
+            case_sensitive_setting = get_column_settings(token, settings_table_id, selected_row['table_id'], f"settings_{get_table_name_suffix()}")[1]
             # st.write(f"Required case sensitive setting: {case_sensitive_setting}")
             primary_key_setting = get_setting(token, selected_bucket, selected_row['table_id'])[1]
             # st.write(f"Required primary key setting: {primary_key_setting}")
@@ -703,11 +699,11 @@ elif st.session_state['upload-tables']:
                     table_id = selected_bucket + '.' + table_name
                     st.session_state["uploaded_table_id"] = table_id
                     # column_setting = get_setting(token, selected_bucket, table_id)[0]
-                    column_setting = get_column_settings(settings_table_id, selected_row['table_id'], f"settings_{get_table_name_suffix()}")[0]
+                    column_setting = get_column_settings(token, settings_table_id, selected_row['table_id'], f"settings_{get_table_name_suffix()}")[0]
                     format_setting = split_dict(column_setting, 2)
                     null_cells_setting = split_dict(column_setting, 1)
                     # case_sensitive_setting = get_setting(token, selected_bucket, table_id)[3]
-                    case_sensitive_setting = get_column_settings(settings_table_id, selected_row['table_id'], f"settings_{get_table_name_suffix()}")[1]
+                    case_sensitive_setting = get_column_settings(token, settings_table_id, selected_row['table_id'], f"settings_{get_table_name_suffix()}")[1]
                     primary_key_setting = get_setting(token, selected_bucket, table_id)[1]
                     date_setting = date_setting(column_setting)
                     if Path(uploaded_file.name).suffix == '.csv':

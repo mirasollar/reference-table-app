@@ -255,7 +255,8 @@ def get_column_settings(tkn, settings_table_id, selected_table_id, settings_tabl
         for row in reader:
             if row[0] == selected_table_id:
                 if row[1]:
-                    column_setting = json.loads("{" + row[1] + "}")
+                    row_column_setting = re.sub(r"'", '"', row[1])
+                    column_setting = json.loads('{' + row_column_setting + '}')
                 else:
                     column_setting = {}
                 if row[2]:

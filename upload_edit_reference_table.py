@@ -23,7 +23,6 @@ token = st.secrets["kbc_storage_token"]
 kbc_url = url = st.secrets["kbc_url"]
 kbc_token = st.secrets["kbc_token"]
 LOGO_IMAGE_PATH = os.path.abspath("./app/static/keboola.png")
-settings_table_id = f"in.c-reference_tables_metadata.settings_{get_table_name_suffix()}"
 
 # Initialize Client
 client = Client(kbc_url, token)
@@ -466,6 +465,8 @@ def get_password_dataframe(table_name):
 def get_username_by_password(password, df_passwords):
     match = df_passwords.loc[df_passwords['password'] == password, 'name']
     return match.iloc[0] if not match.empty else None
+
+settings_table_id = f"in.c-reference_tables_metadata.settings_{get_table_name_suffix()}"
         
 # Display tables
 init()

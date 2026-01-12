@@ -585,17 +585,14 @@ elif st.session_state['selected-table'] is not None:
     with st.expander("Table Info"):
         # Filter the DataFrame to find the row for the selected table_id
         table_detail_json = client.tables.detail(st.session_state['selected-table'])
-        table_settings = get_column_settings(kbc_token, settings_table_id, st.session_state['selected-table'], f"settings_{get_table_name_suffix()}")
+        # table_settings = get_column_settings(kbc_token, settings_table_id, st.session_state['selected-table'], f"settings_{get_table_name_suffix()}")
         if 'settings_df' in st.session_state:
             # Přístup k datům
             settings_df = st.session_state['settings_df']
         else:
             save_settings_table(kbc_token, settings_table_id)
             settings_df = st.session_state['settings_df']
-            
-        st.write("Pracuji s daty ze session_state:")
-        st.info(read_settings_table(settings_df, st.session_state['selected-table']))
-
+        table_settings = read_settings_table(settings_df, st.session_state['selected-table']))
         selected_row = create_table_info(table_detail_json, table_settings[0], table_settings[1])
 
         # Convert the row to a Series to facilitate access
@@ -641,7 +638,8 @@ elif st.session_state['selected-table'] is not None:
             selected_bucket = split_table_id(selected_row['table_id'])[0]
             # show column formatting settings
             # column_setting = get_setting(token, selected_bucket, selected_row['table_id'])[0]
-            column_setting = get_column_settings(kbc_token, settings_table_id, selected_row['table_id'], f"settings_{get_table_name_suffix()}")[0]
+            # column_setting = get_column_settings(kbc_token, settings_table_id, selected_row['table_id'], f"settings_{get_table_name_suffix()}")[0]
+            column_setting = read_settings_table(settings_df, selected_row['table_id'])[0]
             # st.write(f"Required column setting: {column_setting}")
             format_setting = split_dict(column_setting, 2)
             # st.write(f"Required column formatting: {format_setting}")
@@ -649,6 +647,7 @@ elif st.session_state['selected-table'] is not None:
             # st.write(f"Required not null cells setting: {null_cells_setting}")
             # case_sensitive_setting = get_setting(token, selected_bucket, selected_row['table_id'])[3]
             case_sensitive_setting = get_column_settings(kbc_token, settings_table_id, selected_row['table_id'], f"settings_{get_table_name_suffix()}")[1]
+            case_sensitive_setting = read_settings_table(settings_df, selected_row['table_id'])[1]
             # st.write(f"Required case sensitive setting: {case_sensitive_setting}")
             primary_key_setting = get_setting(token, selected_bucket, selected_row['table_id'])[1]
             # st.write(f"Required primary key setting: {primary_key_setting}")

@@ -510,8 +510,8 @@ if st.session_state['selected-table'] is None and (st.session_state['upload-tabl
     with but_col1:
         if st.button("Reload Data", key="reload-tables", use_container_width = True, type="secondary"):
             st.session_state["tables_id"] = fetch_all_ids()
-            st.session_state["settings"] = save_settings_table(kbc_token, settings_table_id)
-            st.info(st.session_state["settings"])
+            save_settings_table(kbc_token, settings_table_id)
+
             st.toast('Tables List Reloaded!', icon = "✅")
 
     with search_col:

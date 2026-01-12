@@ -479,7 +479,7 @@ def save_settings_table(tkn, settings_table_id):
 
 save_settings_table(kbc_token, settings_table_id)
 
-st.ifno(f"Seznam všech souborů: {os.listdir()}")
+st.info(f"Seznam všech souborů: {os.listdir()}")
 
 def read_settings_table(settings_table_name, selected_table_id):
     with open(f'./{settings_table_name}', mode='r', encoding='utf-8') as in_file:

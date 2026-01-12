@@ -587,7 +587,8 @@ elif st.session_state['selected-table'] is not None:
         # Filter the DataFrame to find the row for the selected table_id
         table_detail_json = client.tables.detail(st.session_state['selected-table'])
         table_settings = get_column_settings(kbc_token, settings_table_id, st.session_state['selected-table'], f"settings_{get_table_name_suffix()}")
-        # read_settings_table("settings.csv", st.session_state['selected-table'])
+        all_settings = read_settings_table("settings.csv", st.session_state['selected-table'])
+        st.info(f"Settings: {all_settings[0]}")
         selected_row = create_table_info(table_detail_json, table_settings[0], table_settings[1])
         # Convert the row to a Series to facilitate access
         selected_row = selected_row.iloc[0]

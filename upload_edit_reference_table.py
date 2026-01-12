@@ -636,20 +636,20 @@ elif st.session_state['selected-table'] is not None:
             # show column formatting settings
             # column_setting = get_setting(token, selected_bucket, selected_row['table_id'])[0]
             # column_setting = get_column_settings(kbc_token, settings_table_id, selected_row['table_id'], f"settings_{get_table_name_suffix()}")[0]
-            if 'settings_df' in st.session_state:
-                settings_df = st.session_state['settings_df']
-            else:
+            st.info(f"Settings in session state před: {st.session_state['settings_df']}")
+            if 'settings_df' not in st.session_state:
                 save_settings_table(kbc_token, settings_table_id)
-                settings_df = st.session_state['settings_df']
-            column_setting = read_settings_table(settings_df, selected_row['table_id'])[0]
+            st.info(f"Settings in session state po: {st.session_state['settings_df']}")
+            settings = read_settings_table(st.session_state['settings_df'], selected_row['table_id'])
+            column_setting = settings[0]
             # st.write(f"Required column setting: {column_setting}")
             format_setting = split_dict(column_setting, 2)
             # st.write(f"Required column formatting: {format_setting}")
             null_cells_setting = split_dict(column_setting, 1)
             # st.write(f"Required not null cells setting: {null_cells_setting}")
             # case_sensitive_setting = get_setting(token, selected_bucket, selected_row['table_id'])[3]
-            case_sensitive_setting = get_column_settings(kbc_token, settings_table_id, selected_row['table_id'], f"settings_{get_table_name_suffix()}")[1]
-            case_sensitive_setting = read_settings_table(settings_df, selected_row['table_id'])[1]
+            # case_sensitive_setting = get_column_settings(kbc_token, settings_table_id, selected_row['table_id'], f"settings_{get_table_name_suffix()}")[1]
+            case_sensitive_setting = settings[1]
             # st.write(f"Required case sensitive setting: {case_sensitive_setting}")
             primary_key_setting = get_setting(token, selected_bucket, selected_row['table_id'])[1]
             # st.write(f"Required primary key setting: {primary_key_setting}")

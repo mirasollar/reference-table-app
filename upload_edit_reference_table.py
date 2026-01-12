@@ -478,6 +478,28 @@ def save_settings_table(tkn, settings_table_id):
     df.to_csv('settings.csv', index=False)
 
 save_settings_table(kbc_token, settings_table_id)
+
+st.ifno(f"Seznam všech souborů: {os.listdir()}")
+
+def read_settings_table(settings_table_name, selected_table_id):
+    with open(f'./{settings_table_name}', mode='r', encoding='utf-8') as in_file:
+    lazy_lines = (line.replace('\0', '') for line in in_file)
+    reader = csv.reader(lazy_lines, lineterminator='\n')
+    header = next(reader)
+    for row in reader:
+        if row[0] == selected_table_id:
+            if row[1]:
+                row_column_setting = re.sub(r"'", '"', row[1])
+                column_setting = json.loads('{' + row_column_setting + '}')
+            else:
+                column_setting = {}
+            if row[2]:
+                case_sensitive_setting = row[2]
+                keys = row[2].split(', ')
+                case_sensitive_setting = {key: "case sensitive" for key in keys}
+            else:
+                case_sensitive_setting = {}
+            return column_setting, case_sensitive_setting
         
 # Display tables
 init()
@@ -565,6 +587,7 @@ elif st.session_state['selected-table'] is not None:
         # Filter the DataFrame to find the row for the selected table_id
         table_detail_json = client.tables.detail(st.session_state['selected-table'])
         table_settings = get_column_settings(kbc_token, settings_table_id, st.session_state['selected-table'], f"settings_{get_table_name_suffix()}")
+        # read_settings_table("settings.csv", st.session_state['selected-table'])
         selected_row = create_table_info(table_detail_json, table_settings[0], table_settings[1])
         # Convert the row to a Series to facilitate access
         selected_row = selected_row.iloc[0]

@@ -588,6 +588,7 @@ elif st.session_state['selected-table'] is not None:
         else:
             save_settings_table(kbc_token, settings_table_id)
             settings_df = st.session_state['settings_df']
+        st.info(f"Setting df: {settings_df}")
         table_settings = read_settings_table(settings_df, st.session_state['selected-table'])
         selected_row = create_table_info(table_detail_json, table_settings[0], table_settings[1])
 

@@ -588,9 +588,13 @@ elif st.session_state['selected-table'] is not None:
         table_settings = get_column_settings(kbc_token, settings_table_id, st.session_state['selected-table'], f"settings_{get_table_name_suffix()}")
         if 'settings_df' in st.session_state:
             # Přístup k datům
-            df = st.session_state['settings_df']
-            st.write("Pracuji s daty ze session_state:")
-            st.dataframe(df) # Zobrazení tabulky
+            settings_df = st.session_state['settings_df']
+        else:
+            save_settings_table(kbc_token, settings_table_id)
+            settings_df = st.session_state['settings_df']
+            
+        st.write("Pracuji s daty ze session_state:")
+        st.info(read_settings_table(settings_df, selected_table_id))
 
         selected_row = create_table_info(table_detail_json, table_settings[0], table_settings[1])
 

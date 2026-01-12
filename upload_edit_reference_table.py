@@ -474,7 +474,7 @@ def save_settings_table(tkn, settings_table_id):
     client.tables.export_to_file(table_id=settings_table_id, path_name='.')
     settings_table_name = settings_table_id.split(".")[2]
     df = pd.read_csv(f'./{settings_table_name}')
-    print(df)
+    st.info(df)
     df.to_csv('settings.csv', index=False)
         
 # Display tables

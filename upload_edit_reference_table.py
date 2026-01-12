@@ -594,7 +594,7 @@ elif st.session_state['selected-table'] is not None:
             settings_df = st.session_state['settings_df']
             
         st.write("Pracuji s daty ze session_state:")
-        st.info(read_settings_table(settings_df, selected_table_id))
+        st.info(read_settings_table(settings_df, st.session_state['selected-table']))
 
         selected_row = create_table_info(table_detail_json, table_settings[0], table_settings[1])
 

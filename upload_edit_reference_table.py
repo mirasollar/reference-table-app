@@ -88,6 +88,9 @@ def init():
     if "save_requested" not in st.session_state:
         st.session_state["save_requested"] = False
 
+    if 'settings_df' not in st.session_state:
+        st.session_state['settings_df'] = None
+
 def update_session_state(table_id):
     with st.spinner('Loading ...'):
         st.session_state['selected-table'] = table_id
@@ -474,8 +477,7 @@ def save_settings_table(tkn, settings_table_id):
     client.tables.export_to_file(table_id=settings_table_id, path_name='.')
     settings_table_name = settings_table_id.split(".")[2]
     df = pd.read_csv(f'./{settings_table_name}')
-    st.info(df)
-    df.to_csv('settings.csv', index=False)
+    st.session_state['settings_df'] = df
 
 save_settings_table(kbc_token, settings_table_id)
 
@@ -587,8 +589,13 @@ elif st.session_state['selected-table'] is not None:
         # Filter the DataFrame to find the row for the selected table_id
         table_detail_json = client.tables.detail(st.session_state['selected-table'])
         table_settings = get_column_settings(kbc_token, settings_table_id, st.session_state['selected-table'], f"settings_{get_table_name_suffix()}")
-        all_settings = read_settings_table("settings.csv", st.session_state['selected-table'])
-        st.info(f"Settings: {all_settings[0]}")
+        if 'settings_df' in st.session_state:
+            # Přístup k datům
+            df = st.session_state['settings_df']
+            
+            st.write("Pracuji s daty ze session_state:")
+            st.dataframe(df) # Zobrazení tabulky
+
         selected_row = create_table_info(table_detail_json, table_settings[0], table_settings[1])
         # Convert the row to a Series to facilitate access
         selected_row = selected_row.iloc[0]

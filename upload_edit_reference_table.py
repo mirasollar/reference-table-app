@@ -468,10 +468,20 @@ def get_username_by_password(password, df_passwords):
     return match.iloc[0] if not match.empty else None
 
 settings_table_id = f"in.c-reference_tables_metadata.settings_{get_table_name_suffix()}"
+
+def save_settings_table(tkn, settings_table_id):
+    client = Client('https://connection.eu-central-1.keboola.com', tkn)
+    client.tables.export_to_file(table_id=settings_table_id, path_name='.')
+    settings_table_name = settings_table_id.split(".")[2]
+    df = pd.read_csv(f'./{settings_table_name}')
+    # print(df)
+    df.to_csv('settings.csv', index=False)
         
 # Display tables
 init()
 st.session_state["tables_id"] = fetch_all_ids()
+st.session_state["settings"] = save_settings_table(kbc_token, settings_table_id)
+st.info(st.session_state["settings"])
 
 if st.session_state['selected-table'] is None and (st.session_state['upload-tables'] is None or st.session_state['upload-tables'] == False):
     #LOGO

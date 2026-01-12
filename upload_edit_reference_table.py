@@ -479,6 +479,8 @@ def save_settings_table(tkn, settings_table_id):
     df = pd.read_csv(f'./{settings_table_name}')
     st.session_state['settings_df'] = df
 
+save_settings_table(kbc_token, settings_table_id)
+
 def read_settings_table(settings_df, selected_table_id):
     settings_df = settings_df.fillna('')
     column_settings_str = settings_df[settings_df["table_id"] == selected_table_id]['setting'].iloc[0]

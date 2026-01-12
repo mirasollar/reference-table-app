@@ -585,10 +585,6 @@ elif st.session_state['selected-table'] is not None:
         # Filter the DataFrame to find the row for the selected table_id
         table_detail_json = client.tables.detail(st.session_state['selected-table'])
         # table_settings = get_column_settings(kbc_token, settings_table_id, st.session_state['selected-table'], f"settings_{get_table_name_suffix()}")
-        if 'settings_df' not in st.session_state:
-            save_settings_table(kbc_token, settings_table_id)
-        st.info(f"Setting df: {st.session_state['settings_df']}")
-        
         table_settings = read_settings_table(st.session_state['settings_df'], st.session_state['selected-table'])
         selected_row = create_table_info(table_detail_json, table_settings[0], table_settings[1])
 
@@ -636,10 +632,6 @@ elif st.session_state['selected-table'] is not None:
             # show column formatting settings
             # column_setting = get_setting(token, selected_bucket, selected_row['table_id'])[0]
             # column_setting = get_column_settings(kbc_token, settings_table_id, selected_row['table_id'], f"settings_{get_table_name_suffix()}")[0]
-            st.info(f"Settings in session state před: {st.session_state['settings_df']}")
-            if 'settings_df' not in st.session_state:
-                save_settings_table(kbc_token, settings_table_id)
-            st.info(f"Settings in session state po: {st.session_state['settings_df']}")
             settings = read_settings_table(st.session_state['settings_df'], selected_row['table_id'])
             column_setting = settings[0]
             # st.write(f"Required column setting: {column_setting}")
@@ -745,8 +737,6 @@ elif st.session_state['upload-tables']:
                     st.session_state["uploaded_table_id"] = table_id
                     # column_setting = get_setting(token, selected_bucket, table_id)[0]
                     # column_setting = get_column_settings(kbc_token, settings_table_id, table_id, f"settings_{get_table_name_suffix()}")[0]
-                    if 'settings_df' not in st.session_state:
-                        save_settings_table(kbc_token, settings_table_id)
                     settings = read_settings_table(st.session_state['settings_df'], table_id)
                     column_setting = settings[0]
                     st.info(f"Col setting: {column_setting}")

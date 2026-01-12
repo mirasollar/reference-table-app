@@ -592,7 +592,7 @@ elif st.session_state['selected-table'] is not None:
         else:
             save_settings_table(kbc_token, settings_table_id)
             settings_df = st.session_state['settings_df']
-        table_settings = read_settings_table(settings_df, st.session_state['selected-table']))
+        table_settings = read_settings_table(settings_df, st.session_state['selected-table'])
         selected_row = create_table_info(table_detail_json, table_settings[0], table_settings[1])
 
         # Convert the row to a Series to facilitate access
@@ -639,6 +639,11 @@ elif st.session_state['selected-table'] is not None:
             # show column formatting settings
             # column_setting = get_setting(token, selected_bucket, selected_row['table_id'])[0]
             # column_setting = get_column_settings(kbc_token, settings_table_id, selected_row['table_id'], f"settings_{get_table_name_suffix()}")[0]
+            if 'settings_df' in st.session_state:
+                settings_df = st.session_state['settings_df']
+            else:
+                save_settings_table(kbc_token, settings_table_id)
+                settings_df = st.session_state['settings_df']
             column_setting = read_settings_table(settings_df, selected_row['table_id'])[0]
             # st.write(f"Required column setting: {column_setting}")
             format_setting = split_dict(column_setting, 2)

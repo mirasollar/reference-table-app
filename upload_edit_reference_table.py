@@ -665,8 +665,6 @@ elif st.session_state['selected-table'] is not None:
                     st.session_state["edited_data"] = modifying_nas(edited_data)
                 st.success("Metadata validated successfully!", icon = "🎉")
                 st.session_state["save_requested"] = True
-                # pokus - refresh po save data
-                st.session_state['selected-table'] = None
                 st.rerun()
 
     # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
@@ -702,6 +700,8 @@ elif st.session_state['selected-table'] is not None:
         st.session_state["save_requested"] = False
         st.session_state["data"] = st.session_state["edited_data"]
         st.cache_data.clear()
+        # pokus - refresh po save data
+        st.session_state['selected-table'] = None
         time.sleep(3)
         st.rerun()
 

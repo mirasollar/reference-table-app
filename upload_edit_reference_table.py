@@ -483,23 +483,23 @@ st.ifno(f"Seznam všech souborů: {os.listdir()}")
 
 def read_settings_table(settings_table_name, selected_table_id):
     with open(f'./{settings_table_name}', mode='r', encoding='utf-8') as in_file:
-    lazy_lines = (line.replace('\0', '') for line in in_file)
-    reader = csv.reader(lazy_lines, lineterminator='\n')
-    header = next(reader)
-    for row in reader:
-        if row[0] == selected_table_id:
-            if row[1]:
-                row_column_setting = re.sub(r"'", '"', row[1])
-                column_setting = json.loads('{' + row_column_setting + '}')
-            else:
-                column_setting = {}
-            if row[2]:
-                case_sensitive_setting = row[2]
-                keys = row[2].split(', ')
-                case_sensitive_setting = {key: "case sensitive" for key in keys}
-            else:
-                case_sensitive_setting = {}
-            return column_setting, case_sensitive_setting
+        lazy_lines = (line.replace('\0', '') for line in in_file)
+        reader = csv.reader(lazy_lines, lineterminator='\n')
+        header = next(reader)
+        for row in reader:
+            if row[0] == selected_table_id:
+                if row[1]:
+                    row_column_setting = re.sub(r"'", '"', row[1])
+                    column_setting = json.loads('{' + row_column_setting + '}')
+                else:
+                    column_setting = {}
+                if row[2]:
+                    case_sensitive_setting = row[2]
+                    keys = row[2].split(', ')
+                    case_sensitive_setting = {key: "case sensitive" for key in keys}
+                else:
+                    case_sensitive_setting = {}
+                return column_setting, case_sensitive_setting
         
 # Display tables
 init()

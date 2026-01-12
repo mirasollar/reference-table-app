@@ -483,25 +483,22 @@ save_settings_table(kbc_token, settings_table_id)
 
 st.info(f"Seznam všech souborů: {os.listdir()}")
 
-def read_settings_table(settings_table_name, selected_table_id):
-    with open(f'./{settings_table_name}', mode='r', encoding='utf-8') as in_file:
-        lazy_lines = (line.replace('\0', '') for line in in_file)
-        reader = csv.reader(lazy_lines, lineterminator='\n')
-        header = next(reader)
-        for row in reader:
-            if row[0] == selected_table_id:
-                if row[1]:
-                    row_column_setting = re.sub(r"'", '"', row[1])
-                    column_setting = json.loads('{' + row_column_setting + '}')
-                else:
-                    column_setting = {}
-                if row[2]:
-                    case_sensitive_setting = row[2]
-                    keys = row[2].split(', ')
-                    case_sensitive_setting = {key: "case sensitive" for key in keys}
-                else:
-                    case_sensitive_setting = {}
-                return column_setting, case_sensitive_setting
+def read_settings_table(settings_df, selected_table_id):
+    settings_df = settings_df.fillna('')
+    column_settings_str = settings_df[settings_df["table_id"] == selected_table_id]['setting'].iloc[0]
+    case_sensitive_str = settings_df[settings_df["table_id"] == selected_table_id]['case_sensitive'].iloc[0]
+    if column_settings_str:
+        row_column_setting = re.sub(r"'", '"', column_settings_str)
+        column_setting = json.loads('{' + row_column_setting + '}')
+    else:
+        column_setting = {}
+    if case_sensitive_str:
+        case_sensitive_setting = case_sensitive_str
+        keys = case_sensitive_str.split(', ')
+        case_sensitive_setting = {key: "case sensitive" for key in keys}
+    else:
+        case_sensitive_setting = {}
+    return column_setting, case_sensitive_setting
         
 # Display tables
 init()
@@ -592,11 +589,11 @@ elif st.session_state['selected-table'] is not None:
         if 'settings_df' in st.session_state:
             # Přístup k datům
             df = st.session_state['settings_df']
-            
             st.write("Pracuji s daty ze session_state:")
             st.dataframe(df) # Zobrazení tabulky
 
         selected_row = create_table_info(table_detail_json, table_settings[0], table_settings[1])
+
         # Convert the row to a Series to facilitate access
         selected_row = selected_row.iloc[0]
         st.markdown(f"**Table ID:** {selected_row['table_id']}")

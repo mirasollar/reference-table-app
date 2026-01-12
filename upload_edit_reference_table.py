@@ -481,7 +481,7 @@ def save_settings_table(tkn, settings_table_id):
 
 save_settings_table(kbc_token, settings_table_id)
 
-st.info(f"Seznam všech souborů: {os.listdir()}")
+st.info(f"Settings df: {st.session_state['settings_df']}")
 
 def read_settings_table(settings_df, selected_table_id):
     settings_df = settings_df.fillna('')
@@ -747,12 +747,20 @@ elif st.session_state['upload-tables']:
                     table_id = selected_bucket + '.' + table_name
                     st.session_state["uploaded_table_id"] = table_id
                     # column_setting = get_setting(token, selected_bucket, table_id)[0]
-                    column_setting = get_column_settings(kbc_token, settings_table_id, table_id, f"settings_{get_table_name_suffix()}")[0]
+                    # column_setting = get_column_settings(kbc_token, settings_table_id, table_id, f"settings_{get_table_name_suffix()}")[0]
+                    if 'settings_df' in st.session_state:
+                        settings_df = st.session_state['settings_df']
+                    else:
+                        save_settings_table(kbc_token, settings_table_id)
+                        settings_df = st.session_state['settings_df']
+                    settings = read_settings_table(settings_df, table_id)
+                    column_setting = settings[0]
                     st.info(f"Col setting: {column_setting}")
                     format_setting = split_dict(column_setting, 2)
                     null_cells_setting = split_dict(column_setting, 1)
                     # case_sensitive_setting = get_setting(token, selected_bucket, table_id)[3]
-                    case_sensitive_setting = get_column_settings(kbc_token, settings_table_id, table_id, f"settings_{get_table_name_suffix()}")[1]
+                    # case_sensitive_setting = get_column_settings(kbc_token, settings_table_id, table_id, f"settings_{get_table_name_suffix()}")[1]
+                    case_sensitive_setting = settings[0]
                     primary_key_setting = get_setting(token, selected_bucket, table_id)[1]
                     date_setting = date_setting(column_setting)
                     if Path(uploaded_file.name).suffix == '.csv':

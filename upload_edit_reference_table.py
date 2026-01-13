@@ -384,7 +384,9 @@ def check_null_cells(df_to_check, col_setting):
             wrong_cols.append(i)
     return wrong_cols
 
-def check_duplicates(df_to_check, cs_setting, pk_setting = []):
+def check_duplicates(df_to_check, columns, case_sensitive_columns, pk_setting = []):
+    cs_setting = {columns: case_sensitive_columns.get(columns, '') for columns in keys}
+    st.info(f"Case sensitive columns: {cs_setting}")
     df_to_check = df_to_check.astype(str)
     for k, v in cs_setting.items():
         if v == '':
@@ -647,15 +649,16 @@ elif st.session_state['selected-table'] is not None:
             # st.write(f"Required primary key setting: {primary_key_setting}")
             date_setting = date_setting(column_setting)
             # st.write(f"Required date setting: {date_setting}")
+            table_columns = get_setting(token, selected_bucket, selected_row['table_id'])[2]
             if date_setting:
                 checking_date = check_date_format(edited_data, date_setting)
             if date_setting and checking_date[0]:
                 st.error(f"The file contains date in the wrong format. Affected columns: {', '.join(checking_date[0])}. Please edit it before proceeding.")
             elif check_null_cells(edited_data, null_cells_setting):
                 st.error(f"The table contains data with null values. Affected columns: {', '.join(check_null_cells(edited_data, null_cells_setting))}. Please edit it before proceeding.")
-            elif primary_key_setting and check_duplicates(edited_data, case_sensitive_setting, primary_key_setting) == 2:
+            elif primary_key_setting and check_duplicates(edited_data, table_columns, case_sensitive_setting, primary_key_setting) == 2:
                 st.error(f"The table contains columns with duplicate values. Affected columns: {', '.join(primary_key_setting)}. Please edit it before proceeding.")
-            elif check_duplicates(edited_data, case_sensitive_setting) == 2:
+            elif check_duplicates(edited_data, table_columns, case_sensitive_setting) == 2:
                 st.error("The table contains duplicate rows. Please remove them before proceeding.")
             else:                            
                 if date_setting:
@@ -744,6 +747,7 @@ elif st.session_state['upload-tables']:
                     format_setting = split_dict(column_setting, 2)
                     null_cells_setting = split_dict(column_setting, 1)
                     # case_sensitive_setting = get_setting(token, selected_bucket, table_id)[3]
+                    table_columns = get_setting(token, selected_bucket, table_id)[2]
                     # case_sensitive_setting = get_column_settings(kbc_token, settings_table_id, table_id, f"settings_{get_table_name_suffix()}")[1]
                     case_sensitive_setting = settings[1]
                     st.write(f"Required case sensitive setting: {case_sensitive_setting}")
@@ -777,9 +781,9 @@ elif st.session_state['upload-tables']:
                         st.error(f"The file contains date in the wrong format. Affected columns: {', '.join(checking_date[0])}. Please edit it before proceeding.")         
                     elif check_null_cells(modifying_nas(df), null_cells_setting):
                         st.error(f"The file contains data with null values. Affected columns: {', '.join(check_null_cells(modifying_nas(df), null_cells_setting))}. Please edit it before proceeding.")
-                    elif primary_key_setting and check_duplicates(df, case_sensitive_setting, primary_key_setting) == 2:
+                    elif primary_key_setting and check_duplicates(df, table_columns, case_sensitive_setting, primary_key_setting) == 2:
                         st.error(f"The table contains columns with duplicate values. Affected columns: {', '.join(primary_key_setting)}. Please edit it before proceeding.")
-                    elif check_duplicates(df, case_sensitive_setting) == 2:
+                    elif check_duplicates(df, table_columns, case_sensitive_setting) == 2:
                         st.error("The table contains duplicate rows. Please remove them before proceeding.")
                     else:
                         if date_setting:

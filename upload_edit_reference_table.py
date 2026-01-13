@@ -385,7 +385,7 @@ def check_null_cells(df_to_check, col_setting):
     return wrong_cols
 
 def check_duplicates(df_to_check, columns, case_sensitive_columns, pk_setting = []):
-    cs_setting = {columns: case_sensitive_columns.get(columns, '') for columns in keys}
+    cs_setting = {column: case_sensitive_columns.get(column, '') for column in columns}
     st.info(f"Case sensitive columns: {cs_setting}")
     df_to_check = df_to_check.astype(str)
     for k, v in cs_setting.items():

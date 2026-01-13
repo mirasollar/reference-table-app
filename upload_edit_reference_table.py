@@ -644,7 +644,7 @@ elif st.session_state['selected-table'] is not None:
             # case_sensitive_setting = get_setting(token, selected_bucket, selected_row['table_id'])[3]
             # case_sensitive_setting = get_column_settings(kbc_token, settings_table_id, selected_row['table_id'], f"settings_{get_table_name_suffix()}")[1]
             case_sensitive_setting = settings[1]
-            st.write(f"Required case sensitive setting: {case_sensitive_setting}")
+            # st.write(f"Required case sensitive setting: {case_sensitive_setting}")
             primary_key_setting = get_setting(token, selected_bucket, selected_row['table_id'])[1]
             # st.write(f"Required primary key setting: {primary_key_setting}")
             date_setting = date_setting(column_setting)

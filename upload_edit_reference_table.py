@@ -701,9 +701,9 @@ elif st.session_state['selected-table'] is not None:
         # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
         st.session_state["save_requested"] = False
         st.session_state["data"] = st.session_state["edited_data"]
-        st.cache_data.clear()
-        # pokus - refresh po save data
+        # After saving the data, it is safer to switch to the list of all tables (st.session_state['selected-table'] = None)
         st.session_state['selected-table'] = None
+        st.cache_data.clear()
         time.sleep(3)
         st.rerun()
 
@@ -749,7 +749,7 @@ elif st.session_state['upload-tables']:
                     table_columns = get_setting(token, selected_bucket, table_id)[2]
                     # case_sensitive_setting = get_column_settings(kbc_token, settings_table_id, table_id, f"settings_{get_table_name_suffix()}")[1]
                     case_sensitive_setting = settings[1]
-                    st.write(f"Required case sensitive setting: {case_sensitive_setting}")
+                    # st.write(f"Required case sensitive setting: {case_sensitive_setting}")
                     primary_key_setting = get_setting(token, selected_bucket, table_id)[1]
                     date_setting = date_setting(column_setting)
                     if Path(uploaded_file.name).suffix == '.csv':

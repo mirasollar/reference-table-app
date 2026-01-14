@@ -709,8 +709,8 @@ elif st.session_state['upload-tables']:
                     if date_setting:
                         checking_date = check_date_format(modifying_nas(df), date_setting)
                 
-                    missing_columns = check_columns_diff(table_columns[1], df.columns.values.tolist())[0]
-                    extra_columns = check_columns_diff(table_columns[1], df.columns.values.tolist())[1]
+                    missing_columns = check_columns_diff(table_columns, df.columns.values.tolist())[0]
+                    extra_columns = check_columns_diff(table_columns, df.columns.values.tolist())[1]
     
                     if missing_columns:
                         st.error(f"Some columns are missing in the file. Affected columns: {', '.join(missing_columns)}. The column names are case-sensitive. Please edit it before proceeding.")

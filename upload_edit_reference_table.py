@@ -88,6 +88,9 @@ def init():
     if "save_requested" not in st.session_state:
         st.session_state["save_requested"] = False
 
+    if 'settings_df' not in st.session_state:
+        st.session_state['settings_df'] = None
+
 def update_session_state(table_id):
     with st.spinner('Loading ...'):
         st.session_state['selected-table'] = table_id
@@ -234,28 +237,11 @@ def cast_columns(df):
             df[col] = pd.Series(df[col], dtype="string")
     return df
         
-def get_setting(tkn, kbc_bucket_id, kbc_table_id):
+def get_table_metadata(tkn, kbc_bucket_id, kbc_table_id):
     c = Client('https://connection.eu-central-1.keboola.com', tkn)
-    description = c.tables.detail(kbc_table_id)["metadata"][0]["value"]
     table_columns = c.tables.detail(kbc_table_id)["columns"]
-    col_metadata = c.tables.detail(kbc_table_id)["columnMetadata"]
     primary_key = c.tables.detail(kbc_table_id)["primaryKey"]
-    if 'Upload setting' in description:
-        description = description.replace('\n','')
-        description = re.sub(r'.*Upload setting:?\s*```\{', '{', description)
-        description = re.sub(r'```.*', '', description)
-        description = re.sub(r"'", '"', description)
-        col_setting = re.sub(r"\}.*", '}', description)
-        col_setting = json.loads(col_setting)
-    else:
-        col_setting = {}
-    case_sensitive = {}
-    for col in table_columns:
-        case_sensitive[col] = ''
-        for k, v in col_metadata.items():
-            if col == k and v[0]["value"] == 'case sensitive':
-                case_sensitive[col] = v[0]["value"]
-    return col_setting, primary_key, table_columns, case_sensitive
+    return primary_key, table_columns
         
 def check_columns_diff(current_columns, file_columns):
     missing_columns = [x for x in current_columns if x not in set(file_columns)]
@@ -370,7 +356,8 @@ def check_null_cells(df_to_check, col_setting):
             wrong_cols.append(i)
     return wrong_cols
 
-def check_duplicates(df_to_check, cs_setting, pk_setting = []):
+def check_duplicates(df_to_check, columns, case_sensitive_columns, pk_setting = []):
+    cs_setting = {column: case_sensitive_columns.get(column, '') for column in columns}
     df_to_check = df_to_check.astype(str)
     for k, v in cs_setting.items():
         if v == '':
@@ -380,26 +367,15 @@ def check_duplicates(df_to_check, cs_setting, pk_setting = []):
     duplicity_value = len(df_to_check.duplicated().unique().tolist())
     return duplicity_value
 
-def create_table_info(json_data):
+def create_table_info(json_data, column_setting, case_sensitive_setting):
     table_id = json_data['id']
     display_name = json_data['displayName']
     primary_key = ', '.join(json_data['primaryKey'])
     last_import_date = json_data['lastImportDate']
     rows_count = json_data['rowsCount']
     created = json_data['created']
-    # description - KBC.description
-    description = ''
-    for item in json_data['metadata']:
-        if item['key'] == 'KBC.description':         
-            table_setting_str_dict = re.sub("'", '"', re.sub(r'```.*', '', re.sub(r'.*Upload setting:?\s*```\{', '{', item['value'])))
-            description = ', '.join(f"*{key}*: {value}" for key, value in json.loads(table_setting_str_dict).items())
-            break
-    # key (column name) if "case sensitive"
-    case_sensitive_columns = []
-    for column, metadata_list in json_data['columnMetadata'].items():
-        for metadata in metadata_list:
-            if metadata['value'] == 'case sensitive':
-                case_sensitive_columns.append(column)
+    description = ', '.join(f"*{key}*: {value}" for key, value in column_setting.items())
+    case_sensitive_columns = ', '.join(f"{key}" for key in case_sensitive_setting.keys())
     data = {
         'table_id': [table_id],
         'displayName': [display_name],
@@ -454,6 +430,35 @@ def get_password_dataframe(table_name):
 def get_username_by_password(password, df_passwords):
     match = df_passwords.loc[df_passwords['password'] == password, 'name']
     return match.iloc[0] if not match.empty else None
+
+settings_table_id = f"in.c-reference_tables_metadata.settings_{get_table_name_suffix()}"
+
+def save_settings_df(tkn, settings_table_id):
+    client = Client('https://connection.eu-central-1.keboola.com', tkn)
+    client.tables.export_to_file(table_id=settings_table_id, path_name='.')
+    settings_table_name = settings_table_id.split(".")[2]
+    df = pd.read_csv(f'./{settings_table_name}')
+    st.session_state['settings_df'] = df
+
+if 'settings_df' not in st.session_state:
+    save_settings_df(kbc_token, settings_table_id)
+
+def read_settings_df(settings_df, selected_table_id):
+    settings_df = settings_df.fillna('')
+    column_settings_str = settings_df[settings_df["table_id"] == selected_table_id]['setting'].iloc[0]
+    case_sensitive_str = settings_df[settings_df["table_id"] == selected_table_id]['case_sensitive'].iloc[0]
+    if column_settings_str:
+        row_column_setting = re.sub(r"'", '"', column_settings_str)
+        column_setting = json.loads('{' + row_column_setting + '}')
+    else:
+        column_setting = {}
+    if case_sensitive_str:
+        case_sensitive_setting = case_sensitive_str
+        keys = case_sensitive_str.split(', ')
+        case_sensitive_setting = {key: "case sensitive" for key in keys}
+    else:
+        case_sensitive_setting = {}
+    return column_setting, case_sensitive_setting
         
 # Display tables
 init()
@@ -540,7 +545,9 @@ elif st.session_state['selected-table'] is not None:
     with st.expander("Table Info"):
         # Filter the DataFrame to find the row for the selected table_id
         table_detail_json = client.tables.detail(st.session_state['selected-table'])
-        selected_row = create_table_info(table_detail_json)
+        settings = read_settings_df(st.session_state['settings_df'], st.session_state['selected-table'])
+        selected_row = create_table_info(table_detail_json, settings[0], settings[1])
+
         # Convert the row to a Series to facilitate access
         selected_row = selected_row.iloc[0]
         st.markdown(f"**Table ID:** {selected_row['table_id']}")
@@ -548,9 +555,9 @@ elif st.session_state['selected-table'] is not None:
         st.markdown(f"**Updated at:** {split_datetime(selected_row['lastImportDate'])}")
         st.markdown(f"**Primary Key:** {selected_row.get('primaryKey', 'N/A')}")
         st.markdown(f"**Table Setting:** {selected_row['description']}")
-        case_sensitive_columns = selected_row['case_sensitive_columns']
-        if case_sensitive_columns:
-            st.markdown(f"**Case Sensitive Columns:** {', '.join(case_sensitive_columns)}")
+        # case_sensitive_columns = selected_row['case_sensitive_columns']
+        if selected_row['case_sensitive_columns']:
+            st.markdown(f"**Case Sensitive Columns:** {selected_row['case_sensitive_columns']}")
         st.markdown(f"**Rows Count:** {selected_row['rowsCount']}")
 
     st.button("Download Data", on_click=toggle_downloads, help="Click to show download options")
@@ -580,30 +587,25 @@ elif st.session_state['selected-table'] is not None:
             edited_data = cast_columns(edited_data)
             edited_data = delete_null_rows(modifying_nas(edited_data))
             edited_data = delete_decimal_zero(edited_data)
-            
             selected_bucket = split_table_id(selected_row['table_id'])[0]
-            # show column formatting settings
-            column_setting = get_setting(token, selected_bucket, selected_row['table_id'])[0]
-            # st.write(f"Required column setting: {column_setting}")
+            settings = read_settings_df(st.session_state['settings_df'], selected_row['table_id'])
+            table_metadata = get_table_metadata(token, selected_bucket, selected_row['table_id'])
+            column_setting = settings[0]
             format_setting = split_dict(column_setting, 2)
-            # st.write(f"Required column formatting: {format_setting}")
             null_cells_setting = split_dict(column_setting, 1)
-            # st.write(f"Required not null cells setting: {null_cells_setting}")
-            case_sensitive_setting = get_setting(token, selected_bucket, selected_row['table_id'])[3]
-            # st.write(f"Required case sensitive setting: {case_sensitive_setting}")
-            primary_key_setting = get_setting(token, selected_bucket, selected_row['table_id'])[1]
-            # st.write(f"Required primary key setting: {primary_key_setting}")
+            case_sensitive_setting = settings[1]
+            primary_key_setting = table_metadata[0]
             date_setting = date_setting(column_setting)
-            # st.write(f"Required date setting: {date_setting}")
+            table_columns = table_metadata[1]
             if date_setting:
                 checking_date = check_date_format(edited_data, date_setting)
             if date_setting and checking_date[0]:
                 st.error(f"The file contains date in the wrong format. Affected columns: {', '.join(checking_date[0])}. Please edit it before proceeding.")
             elif check_null_cells(edited_data, null_cells_setting):
                 st.error(f"The table contains data with null values. Affected columns: {', '.join(check_null_cells(edited_data, null_cells_setting))}. Please edit it before proceeding.")
-            elif primary_key_setting and check_duplicates(edited_data, case_sensitive_setting, primary_key_setting) == 2:
+            elif primary_key_setting and check_duplicates(edited_data, table_columns, case_sensitive_setting, primary_key_setting) == 2:
                 st.error(f"The table contains columns with duplicate values. Affected columns: {', '.join(primary_key_setting)}. Please edit it before proceeding.")
-            elif check_duplicates(edited_data, case_sensitive_setting) == 2:
+            elif check_duplicates(edited_data, table_columns, case_sensitive_setting) == 2:
                 st.error("The table contains duplicate rows. Please remove them before proceeding.")
             else:                            
                 if date_setting:
@@ -647,6 +649,8 @@ elif st.session_state['selected-table'] is not None:
         # Po uložení se resetuje stav save_requested, aby se neukládalo znovu
         st.session_state["save_requested"] = False
         st.session_state["data"] = st.session_state["edited_data"]
+        # After saving the data, it is safer to switch to the list of all tables (st.session_state['selected-table'] = None)
+        st.session_state['selected-table'] = None
         st.cache_data.clear()
         time.sleep(3)
         st.rerun()
@@ -683,11 +687,14 @@ elif st.session_state['upload-tables']:
                 else:
                     table_id = selected_bucket + '.' + table_name
                     st.session_state["uploaded_table_id"] = table_id
-                    column_setting = get_setting(token, selected_bucket, table_id)[0]
+                    settings = read_settings_df(st.session_state['settings_df'], table_id)
+                    table_metadata = get_table_metadata(token, selected_bucket, table_id)
+                    column_setting = settings[0]
                     format_setting = split_dict(column_setting, 2)
                     null_cells_setting = split_dict(column_setting, 1)
-                    case_sensitive_setting = get_setting(token, selected_bucket, table_id)[3]
-                    primary_key_setting = get_setting(token, selected_bucket, table_id)[1]
+                    table_columns = table_metadata[1]
+                    case_sensitive_setting = settings[1]
+                    primary_key_setting = table_metadata[0]
                     date_setting = date_setting(column_setting)
                     if Path(uploaded_file.name).suffix == '.csv':
                         file_content = uploaded_file.read()
@@ -702,8 +709,8 @@ elif st.session_state['upload-tables']:
                     if date_setting:
                         checking_date = check_date_format(modifying_nas(df), date_setting)
                 
-                    missing_columns = check_columns_diff(get_setting(token, selected_bucket, table_id)[2], df.columns.values.tolist())[0]
-                    extra_columns = check_columns_diff(get_setting(token, selected_bucket, table_id)[2], df.columns.values.tolist())[1]
+                    missing_columns = check_columns_diff(table_columns, df.columns.values.tolist())[0]
+                    extra_columns = check_columns_diff(table_columns, df.columns.values.tolist())[1]
     
                     if missing_columns:
                         st.error(f"Some columns are missing in the file. Affected columns: {', '.join(missing_columns)}. The column names are case-sensitive. Please edit it before proceeding.")
@@ -717,9 +724,9 @@ elif st.session_state['upload-tables']:
                         st.error(f"The file contains date in the wrong format. Affected columns: {', '.join(checking_date[0])}. Please edit it before proceeding.")         
                     elif check_null_cells(modifying_nas(df), null_cells_setting):
                         st.error(f"The file contains data with null values. Affected columns: {', '.join(check_null_cells(modifying_nas(df), null_cells_setting))}. Please edit it before proceeding.")
-                    elif primary_key_setting and check_duplicates(df, case_sensitive_setting, primary_key_setting) == 2:
+                    elif primary_key_setting and check_duplicates(df, table_columns, case_sensitive_setting, primary_key_setting) == 2:
                         st.error(f"The table contains columns with duplicate values. Affected columns: {', '.join(primary_key_setting)}. Please edit it before proceeding.")
-                    elif check_duplicates(df, case_sensitive_setting) == 2:
+                    elif check_duplicates(df, table_columns, case_sensitive_setting) == 2:
                         st.error("The table contains duplicate rows. Please remove them before proceeding.")
                     else:
                         if date_setting:

@@ -279,27 +279,27 @@ def check_null_rows(df_to_check):
 def create_column_config(df_to_edit):
     column_config = {}
     col_types_dict = df_to_edit.dtypes.astype(str).to_dict()
-    for k, v in col_types_dict.items():
-        if v == 'int64':
-            column_config[k] = st.column_config.NumberColumn(format="%d")
+    for key, value in col_types_dict.items():
+        if value == 'int64':
+            column_config[key] = st.column_config.NumberColumn(format="%d")
     return column_config
 
 def check_col_types(df_to_check, col_setting):
     col_types_dict = df_to_check.dtypes.astype(str).to_dict()
-    for x, y in col_types_dict.items():
-        if y == 'object':
-            col_types_dict.update({x: 'string'})
-        elif re.search("(int|float).*", y):
-            col_types_dict.update({x: 'number'})
-        elif y == 'bool':
-            col_types_dict.update({x: 'logical'})
+    for key, value in col_types_dict.items():
+        if value == 'object':
+            col_types_dict.update({key: 'string'})
+        elif re.search("(int|float).*", value):
+            col_types_dict.update({key: 'number'})
+        elif value == 'bool':
+            col_types_dict.update({key: 'logical'})
         else:
             pass
     dict_filter = lambda x, y: dict([ (i,x[i]) for i in x if i in set(y) ])
-    col_setting = {k: v for k, v in col_setting.items() if not re.search("%", v)}
+    col_setting = {key: value for key, value in col_setting.items() if not re.search("%", value)}
     wanted_keys = tuple(col_setting.keys())
     col_types_dict = dict_filter(col_types_dict, wanted_keys)
-    wrong_columns = [k for k in col_types_dict if col_types_dict[k] != col_setting.get(k)]
+    wrong_columns = [key for key in col_types_dict if col_types_dict[key] != col_setting.get(key)]
     return wrong_columns
 
 def modifying_nas(df_for_editing):
@@ -307,24 +307,24 @@ def modifying_nas(df_for_editing):
     return mod_df
 
 def delete_decimal_zero(df_for_editing):
-    for k, v in df_for_editing.dtypes.astype(str).to_dict().items():
-        if re.search("(int|float).*", v):
-            df_for_editing[k] = df_for_editing[k].astype(str)
-            df_for_editing[k] = df_for_editing[k].replace(r'\.0$', '', regex=True)
+    for key, value in df_for_editing.dtypes.astype(str).to_dict().items():
+        if re.search("(int|float).*", value):
+            df_for_editing[key] = df_for_editing[key].astype(str)
+            df_for_editing[key] = df_for_editing[key].replace(r'\.0$', '', regex=True)
     return df_for_editing
 
 def check_date_format(df_to_check, date_setting_dict):
     col_names = df_to_check.columns.values.tolist()
     col_names_to_check = list(set(col_names).intersection(list(date_setting_dict.keys())))
     wrong_cols = []
-    for k, v in date_setting_dict.items():
+    for key, value in date_setting_dict.items():
         for col_name in col_names_to_check:
-            if k == col_name:
+            if key == col_name:
                 try:
-                    df_to_check[col_name] = pd.to_datetime(df_to_check[col_name], format=v.split(",")[0])
-                    df_to_check[col_name] = df_to_check[col_name].dt.strftime(v.split(",")[0])
+                    df_to_check[col_name] = pd.to_datetime(df_to_check[col_name], format=value.split(",")[0])
+                    df_to_check[col_name] = df_to_check[col_name].dt.strftime(value.split(",")[0])
                 except:
-                    wrong_cols.append(k)
+                    wrong_cols.append(key)
     return wrong_cols, df_to_check
 
 def delete_null_rows(df_for_editing):
@@ -359,9 +359,9 @@ def check_null_cells(df_to_check, col_setting):
 def check_duplicates(df_to_check, columns, case_sensitive_columns, pk_setting = []):
     cs_setting = {column: case_sensitive_columns.get(column, '') for column in columns}
     df_to_check = df_to_check.astype(str)
-    for k, v in cs_setting.items():
-        if v == '':
-            df_to_check[k] = df_to_check[k].apply(str.lower)
+    for key, value in cs_setting.items():
+        if value == '':
+            df_to_check[key] = df_to_check[key].apply(str.lower)
     if pk_setting:
         df_to_check = df_to_check[pk_setting]
     duplicity_value = len(df_to_check.duplicated().unique().tolist())

@@ -481,7 +481,6 @@ st.write(f"Sešmna user name: {st.session_state['user_name']}")
 
 if st.session_state['user_name'] is None:
     col1,col2,col4= st.columns((2,7,2))
-    with col1:
     st.title("Data Editor")
     st.info('Nemáte přistup do této appky. Pokud si myslíte, že byste ho měli mít, kontaktujte admina.', icon="ℹ️")
 

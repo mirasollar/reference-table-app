@@ -488,7 +488,7 @@ else:
     if st.session_state['user_name'] is None:
         st.session_state['user_name'] = 'Anonymous Squirell'
         
-st.write(f"User name: {st.session_state['user_name'}")
+st.write(f"User name: {st.session_state['user_name']}")
 
 if st.session_state['user_name'] is None:
     col1,col2,col4= st.columns((2,7,2))

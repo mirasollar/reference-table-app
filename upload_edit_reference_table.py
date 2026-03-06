@@ -477,7 +477,9 @@ st.session_state["tables_id"] = fetch_all_ids()
 if 'miroslav.sollar@firma.seznam.cz' in string_to_list(allowed_users):
     st.session_state['user_name'] = 'miroslav.sollar@firma.seznam.cz'
 
-if st.session_state['selected-table'] is None and (st.session_state['upload-tables'] is None or st.session_state['upload-tables'] == False) and st.session_state['user_name']:
+st.write(f"Sešmna user name: {st.session_state['user_name']}")
+
+if st.session_state['selected-table'] is None and (st.session_state['upload-tables'] is None or st.session_state['upload-tables'] == False) and st.session_state['user_name'] is not None:
     #LOGO
       # Place an image in the first column
     col1, col2, col3 = st.columns((1,7,2))

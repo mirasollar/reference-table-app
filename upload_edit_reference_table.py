@@ -178,6 +178,8 @@ def fetch_all_ids():
     return df
 
 def string_to_list(string):
+    if not string:
+        return []
     return [item.strip() for item in string.split(',')]
 
 # Definujte callback funkci pro tlačítko
@@ -478,6 +480,9 @@ if 'miroslav.sollar@firma.seznam.cz' in string_to_list(allowed_users):
     st.session_state['user_name'] = 'miroslav.sollar@firma.seznam.cz'
 
 st.write(f"Sešmna user name: {st.session_state['user_name']}")
+user_email = st.context.headers.get("X-Kbc-User-Email")
+
+st.write(f"User email: {user_email}")
 
 if st.session_state['user_name'] is None:
     col1,col2,col4= st.columns((2,7,2))

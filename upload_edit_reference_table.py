@@ -38,6 +38,13 @@ try:
 except:
     saving_snapshot = 'False'
 
+try:
+    allowed_users = st.secrets["allowed_users"]
+except:
+    allowed_users = 'False'
+
+st.write(f"Allowed users: {allowed_users}")
+
 # Fetching data 
 @st.cache_data(ttl=60,show_spinner=False)
 def get_dataframe(table_name):

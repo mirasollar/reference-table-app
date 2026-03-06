@@ -476,13 +476,19 @@ def read_settings_df(settings_df, selected_table_id):
 init()
 st.session_state["tables_id"] = fetch_all_ids()
 
-if 'miroslav.sollar@firma.seznam.cz' in string_to_list(allowed_users):
-    st.session_state['user_name'] = 'miroslav.sollar@firma.seznam.cz'
+st.session_state['user_name'] = st.context.headers.get("X-Kbc-User-Email")
 
-st.write(f"Sešmna user name: {st.session_state['user_name']}")
-user_email = st.context.headers.get("X-Kbc-User-Email")
+# if 'miroslav.sollar@firma.seznam.cz' in string_to_list(allowed_users):
+#    st.session_state['user_name'] = 'miroslav.sollar@firma.seznam.cz'
 
-st.write(f"User email: {user_email}")
+if allowed_users:
+    if st.session_state['user_name'] not in string_to_list(allowed_users):
+        st.session_state['user_name'] = None
+else:
+    if st.session_state['user_name'] is None:
+        st.session_state['user_name'] = 'Anonymous Squirell'
+        
+st.write(f"User name: {st.session_state['user_name'}")
 
 if st.session_state['user_name'] is None:
     col1,col2,col4= st.columns((2,7,2))

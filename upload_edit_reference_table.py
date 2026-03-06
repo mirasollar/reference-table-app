@@ -482,9 +482,9 @@ st.write(f"Sešmna user name: {st.session_state['user_name']}")
 if st.session_state['user_name'] is None:
     col1,col2,col4= st.columns((2,7,2))
     st.title("Data Editor")
-    st.info('Nemáte přistup do této appky. Pokud si myslíte, že byste ho měli mít, kontaktujte admina.', icon="ℹ️")
+    st.info('Access denied. Please contact the administrator if you require access.', icon="ℹ️")
 
-elif st.session_state['selected-table'] is None and (st.session_state['upload-tables'] is None or st.session_state['upload-tables'] == False) and st.session_state['user_name']:
+elif st.session_state['selected-table'] is None and (st.session_state['upload-tables'] is None or st.session_state['upload-tables'] == False):
     #LOGO
       # Place an image in the first column
     col1, col2, col3 = st.columns((1,7,2))

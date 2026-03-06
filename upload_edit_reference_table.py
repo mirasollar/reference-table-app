@@ -475,7 +475,7 @@ init()
 st.session_state["tables_id"] = fetch_all_ids()
 
 if 'miroslav.sollar@firma.seznam.cz' in string_to_list(allowed_users):
-    st.session_state['user_name'] = None
+    st.session_state['user_name'] = 'miroslav.sollar@firma.seznam.cz'
 
 st.write(f"Sešmna user name: {st.session_state['user_name']}")
 

@@ -177,6 +177,9 @@ def fetch_all_ids():
         df = pd.concat([df, df_stage])
     return df
 
+def string_to_list(string):
+    return [item.strip() for item in string.split(',')]
+
 # Definujte callback funkci pro tlačítko
 def on_click_uploads():
     st.session_state["upload-tables"] = True
@@ -471,7 +474,10 @@ def read_settings_df(settings_df, selected_table_id):
 init()
 st.session_state["tables_id"] = fetch_all_ids()
 
-if st.session_state['selected-table'] is None and (st.session_state['upload-tables'] is None or st.session_state['upload-tables'] == False):
+if 'miroslav.sollar@firma.seznam.cz' in string_to_list(allowed_users):
+    st.session_state['user_name'] = 'miroslav.sollar@firma.seznam.cz'
+
+if st.session_state['selected-table'] is None and (st.session_state['upload-tables'] is None or st.session_state['upload-tables'] == False) and st.session_state['user_name']:
     #LOGO
       # Place an image in the first column
     col1, col2, col3 = st.columns((1,7,2))

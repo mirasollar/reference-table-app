@@ -480,8 +480,7 @@ else:
     elif st.session_state['user_name'] not in string_to_list(allowed_users):
         st.session_state['user_name'] = None
     else:
-        st.write("Tady už by nemělo nic být.")
-        st.stop()
+        st.write(f"Přihlášený uživatel: {st.session_state['user_name']}")
         
 st.write(f"User name: {st.session_state['user_name']}")
 

@@ -29,11 +29,6 @@ client = Client(kbc_url, token)
 kbc_client = Client(kbc_url, kbc_token)
 
 try:
-    logged_user = st.secrets["logged_user"]
-except:
-    logged_user = 'False'
-
-try:
     saving_snapshot = st.secrets["saving_snapshot"]
 except:
     saving_snapshot = 'False'
@@ -751,21 +746,6 @@ elif st.session_state['upload-tables']:
                         st.success("File uploaded and metadata validated successfully!", icon = "🎉")
                         st.session_state["save_requested"] = True
                         st.rerun()
-
-        # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
-        if logged_user == 'True':
-            if st.session_state["save_requested"] and st.session_state['user_name'] == None:
-                password_input = st.text_input("Enter password:", type="password")
-                if "passwords" not in st.session_state:
-                    st.session_state['passwords'] = get_password_dataframe(f"in.c-reference_tables_metadata.passwords_{get_table_name_suffix()}")
-                if st.button("Login and Save Data"):
-                    st.session_state['user_name'] = get_username_by_password(password_input, st.session_state['passwords'])
-                    if st.session_state['user_name'] != None:
-                        st.success(f"✅ Password is correct. Hi, {st.session_state['user_name']}. You are logged in!")
-                    else:
-                        st.error("Invalid password.")      
-        else:
-            st.session_state['user_name'] = "Anonymous Squirrel"
 
         # Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, tak se uloží
         if st.session_state['user_name'] != None and st.session_state["save_requested"]:

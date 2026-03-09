@@ -461,7 +461,7 @@ def read_settings_df(settings_df, selected_table_id):
 init()
 st.session_state["tables_id"] = fetch_all_ids()
 
-st.session_state['user_name'] = st.context.headers.get("X-Kbc-User-Email").lower()
+st.session_state['user_name'] = st.context.headers.get("X-Kbc-User-Email")
 
 if allowed_users == 'False':
     if st.session_state['user_name'] is None:
@@ -473,7 +473,7 @@ else:
     if st.session_state['user_name'] is None:
         st.error("An allowed user list is configured, but SSO login is not enabled. User access cannot be verified. Please contact the administrator.")
         st.stop()
-    elif st.session_state['user_name'] not in string_to_list_lowercase(allowed_users):
+    elif st.session_state['user_name'].lower() not in string_to_list_lowercase(allowed_users):
         st.session_state['user_name'] = None
     else:
         st.write(f"Logged in: {st.session_state['user_name']}")

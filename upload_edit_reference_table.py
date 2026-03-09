@@ -485,7 +485,7 @@ if allowed_users != 'False':
         st.session_state['user_name'] = None
 else:
     if st.session_state['user_name'] is None:
-        st.session_state['user_name'] = 'Anonymous Squirell'
+        st.session_state['user_name'] = 'Anonymous Squirrel'
         
 st.write(f"User name: {st.session_state['user_name']}")
 

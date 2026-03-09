@@ -467,12 +467,18 @@ st.session_state['user_name'] = st.context.headers.get("X-Kbc-User-Email")
 
 # st.session_state['user_name'] = 'miroslav.sollar@firma.seznam.cz'
 
-if allowed_users != 'False':
-    if st.session_state['user_name'] not in string_to_list(allowed_users):
-        st.session_state['user_name'] = None
-else:
+if allowed_users == 'False':
     if st.session_state['user_name'] is None:
         st.session_state['user_name'] = 'Anonymous Squirrel'
+    else:
+        st.error("Není nastaveno allowed_users. Je tdy SSO, takže by to mělo být ošetřeno.")
+else:
+    if st.session_state['user_name'] is None:
+        st.error("Je nastaveno allowed_users, ale asi není nastaveno SSO.")
+    elif st.session_state['user_name'] not in string_to_list(allowed_users):
+        st.session_state['user_name'] = None
+    else:
+        st.write("Tady už by nemělo nic být.")
         
 st.write(f"User name: {st.session_state['user_name']}")
 

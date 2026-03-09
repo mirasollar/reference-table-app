@@ -475,7 +475,7 @@ if allowed_users == 'False':
         st.stop()
 else:
     if st.session_state['user_name'] is None:
-        st.error("Authorized users are not configured. If SSO login is enabled, a list of authorized users must be provided.")
+        st.error("An allowed user list is configured, but SSO login is not enabled. User access cannot be verified.")
         st.stop()
     elif st.session_state['user_name'] not in string_to_list(allowed_users):
         st.session_state['user_name'] = None

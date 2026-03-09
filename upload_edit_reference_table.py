@@ -38,8 +38,6 @@ try:
 except:
     allowed_users = 'False'
 
-st.write(f"Allowed users: {allowed_users}")
-
 # Fetching data 
 @st.cache_data(ttl=60,show_spinner=False)
 def get_dataframe(table_name):
@@ -465,22 +463,20 @@ st.session_state["tables_id"] = fetch_all_ids()
 
 st.session_state['user_name'] = st.context.headers.get("X-Kbc-User-Email")
 
-# st.session_state['user_name'] = 'miroslav.sollar@firma.seznam.cz'
-
 if allowed_users == 'False':
     if st.session_state['user_name'] is None:
         st.session_state['user_name'] = 'Anonymous Squirrel'
     else:
-        st.error("SSO authentication is active, but the allowed user list is missing.")
+        st.error("SSO authentication is active, but the allowed user list is missing. Please contact the administrator.")
         st.stop()
 else:
     if st.session_state['user_name'] is None:
-        st.error("An allowed user list is configured, but SSO login is not enabled. User access cannot be verified.")
+        st.error("An allowed user list is configured, but SSO login is not enabled. User access cannot be verified. Please contact the administrator.")
         st.stop()
     elif st.session_state['user_name'] not in string_to_list(allowed_users):
         st.session_state['user_name'] = None
     else:
-        st.write(f"Přihlášený uživatel: {st.session_state['user_name']}")
+        st.write(f"Logged in: {st.session_state['user_name']}")
         
 st.write(f"User name: {st.session_state['user_name']}")
 

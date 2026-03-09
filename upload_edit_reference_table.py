@@ -430,14 +430,6 @@ def get_table_name_suffix():
     headers = st.context.headers
     return re.sub('-', '_', headers['Host'].split('.')[0])
 
-def get_password_dataframe(table_name):
-    kbc_client.tables.export_to_file(table_id = table_name, path_name='.')
-    return pd.read_csv(f"./{table_name.split('.')[2]}", low_memory=False)
-
-def get_username_by_password(password, df_passwords):
-    match = df_passwords.loc[df_passwords['password'] == password, 'name']
-    return match.iloc[0] if not match.empty else None
-
 settings_table_id = f"in.c-reference_tables_metadata.settings_{get_table_name_suffix()}"
 
 def save_settings_df(tkn, settings_table_id):

@@ -480,7 +480,7 @@ st.session_state['user_name'] = st.context.headers.get("X-Kbc-User-Email")
 
 # st.session_state['user_name'] = 'miroslav.sollar@firma.seznam.cz'
 
-if allowed_users:
+if allowed_users != 'False':
     if st.session_state['user_name'] not in string_to_list(allowed_users):
         st.session_state['user_name'] = None
 else:

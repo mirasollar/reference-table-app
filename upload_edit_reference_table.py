@@ -472,13 +472,16 @@ if allowed_users == 'False':
         st.session_state['user_name'] = 'Anonymous Squirrel'
     else:
         st.error("Není nastaveno allowed_users. Je tdy SSO, takže by to mělo být ošetřeno.")
+        st.stop()
 else:
     if st.session_state['user_name'] is None:
         st.error("Je nastaveno allowed_users, ale asi není nastaveno SSO.")
+        st.stop()
     elif st.session_state['user_name'] not in string_to_list(allowed_users):
         st.session_state['user_name'] = None
     else:
         st.write("Tady už by nemělo nic být.")
+        st.stop()
         
 st.write(f"User name: {st.session_state['user_name']}")
 

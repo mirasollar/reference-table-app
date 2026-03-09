@@ -471,11 +471,11 @@ if allowed_users == 'False':
     if st.session_state['user_name'] is None:
         st.session_state['user_name'] = 'Anonymous Squirrel'
     else:
-        st.error("Není nastaveno allowed_users. Je tdy SSO, takže by to mělo být ošetřeno.")
+        st.error("SSO authentication is active, but the allowed user list is missing.")
         st.stop()
 else:
     if st.session_state['user_name'] is None:
-        st.error("Je nastaveno allowed_users, ale asi není nastaveno SSO.")
+        st.error("Authorized users are not configured. If SSO login is enabled, a list of authorized users must be provided.")
         st.stop()
     elif st.session_state['user_name'] not in string_to_list(allowed_users):
         st.session_state['user_name'] = None

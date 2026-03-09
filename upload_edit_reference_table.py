@@ -647,21 +647,6 @@ elif st.session_state['selected-table'] is not None:
                 st.session_state["save_requested"] = True
                 st.rerun()
 
-    # Pokud bylo kliknuto na "Save" a vyžaduje se přihlášení, ale uživatel není přihlášený, zobrazí se login
-    if logged_user == 'True':
-        if st.session_state["save_requested"] and st.session_state['user_name'] == None:
-            if "passwords" not in st.session_state:
-                st.session_state['passwords'] = get_password_dataframe(f"in.c-reference_tables_metadata.passwords_{get_table_name_suffix()}")
-            password_input = st.text_input("Enter password:", type="password")
-            if st.button("Login and Save Data"):
-                st.session_state['user_name'] = get_username_by_password(password_input, st.session_state['passwords'])
-                if st.session_state['user_name'] != None:
-                    st.success(f"✅ Password is correct. Hi, {st.session_state['user_name']}. You are logged in!")
-                else:
-                    st.error("Invalid password")
-    else:
-        st.session_state['user_name'] = "Anonymous Squirrel"
-
     # Pokud je uživatel přihlášený a zároveň požádal o uložení tabulky, tak se uloží
     if st.session_state['user_name'] != None and st.session_state["save_requested"]:
         try:

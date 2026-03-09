@@ -463,9 +463,9 @@ def read_settings_df(settings_df, selected_table_id):
 init()
 st.session_state["tables_id"] = fetch_all_ids()
 
-# st.session_state['user_name'] = st.context.headers.get("X-Kbc-User-Email")
+st.session_state['user_name'] = st.context.headers.get("X-Kbc-User-Email")
 
-st.session_state['user_name'] = 'miroslav.sollar@firma.seznam.cz'
+# st.session_state['user_name'] = 'miroslav.sollar@firma.seznam.cz'
 
 if allowed_users == 'False':
     if st.session_state['user_name'] is None:

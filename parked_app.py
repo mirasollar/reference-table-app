@@ -464,4 +464,5 @@ st.session_state["tables_id"] = fetch_all_ids()
 
 col1,col2,col4= st.columns((2,7,2))
 st.title("Data Editor")
+st.write(f"Data app: {get_table_name_suffix()}")
 st.info('Temporarily closed.', icon="ℹ️")

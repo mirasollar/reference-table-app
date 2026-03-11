@@ -469,4 +469,4 @@ st.title("Data Editor")
 if get_table_name_suffix() == 'rtb-reference-tables-741376305':
     st.info('This app is closed. Use [RTB app](https://reference-tables-rtb-973891772.hub.eu-central-1.keboola.com/) instead.', icon="ℹ️")
 else:
-    st.info('Temporarily closed.', icon="ℹ️")
+    st.info('This app is closed.', icon="ℹ️")

@@ -464,7 +464,7 @@ st.session_state["tables_id"] = fetch_all_ids()
 
 col1,col2,col4= st.columns((2,7,2))
 st.title("Data Editor")
-st.write(f"Data app: {get_table_name_suffix()}")
+# st.write(f"Data app: {get_table_name_suffix()}")
 
 if get_table_name_suffix() == 'rtb_reference_tables_741376305':
     st.info('This app is closed. Use [RTB app](https://reference-tables-rtb-973891772.hub.eu-central-1.keboola.com/) instead.', icon="ℹ️")

@@ -425,8 +425,9 @@ def get_now_utc():
     return now_utc.strftime('%Y-%m-%d, %H:%M:%S')
 
 def get_table_name_suffix():
-    headers = st.context.headers
-    return re.sub('-', '_', headers['Host'].split('.')[0])
+    headers = st.context.headers 
+    host = re.sub('-', '_', headers['Host'].split('.')[0])
+    return re.sub('app_', '', host)
 
 def save_settings_df(tkn, settings_table_id):
     client = Client('https://connection.eu-central-1.keboola.com', tkn)
@@ -461,7 +462,7 @@ col1,col2,col4= st.columns((2,7,2))
 st.title("Data Editor")
 # st.write(f"Data app: {get_table_name_suffix()}")
 
-if get_table_name_suffix() == 'rtb_reference_tables_741376305':
+if get_table_name_suffix() == '741376305':
     st.info('This app is closed. Use [RTB app](https://reference-tables-rtb-973891772.hub.eu-central-1.keboola.com/) instead.', icon="ℹ️")
 else:
     st.info('This app is closed.', icon="ℹ️")

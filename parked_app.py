@@ -428,8 +428,6 @@ def get_table_name_suffix():
     headers = st.context.headers
     return re.sub('-', '_', headers['Host'].split('.')[0])
 
-settings_table_id = f"in.c-reference_tables_metadata.settings_{get_table_name_suffix()}"
-
 def save_settings_df(tkn, settings_table_id):
     client = Client('https://connection.eu-central-1.keboola.com', tkn)
     client.tables.export_to_file(table_id=settings_table_id, path_name='.')

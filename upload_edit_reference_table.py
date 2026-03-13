@@ -435,6 +435,7 @@ def get_username_by_password(password, df_passwords):
 headers = st.context.headers 
 host = re.sub('-', '_', headers['Host'].split('.')[0])
 st.write(f"host: {host}")
+st.write(f"headers: {headers}")
 
 settings_table_id = f"in.c-reference_tables_metadata.settings_{get_table_name_suffix()}"
 

@@ -431,6 +431,8 @@ def get_username_by_password(password, df_passwords):
     match = df_passwords.loc[df_passwords['password'] == password, 'name']
     return match.iloc[0] if not match.empty else None
 
+st.write(f"headers: {st.context.headers}")
+
 settings_table_id = f"in.c-reference_tables_metadata.settings_{get_table_name_suffix()}"
 
 def save_settings_df(tkn, settings_table_id):

@@ -434,7 +434,7 @@ def get_username_by_password(password, df_passwords):
 
 st.write(f"headers: {st.context.headers}")
 
-settings_table_id = f"in.c-reference_tables_metadata.settings_{get_table_name_suffix()}"
+# settings_table_id = f"in.c-reference_tables_metadata.settings_{get_table_name_suffix()}"
 
 def save_settings_df(tkn, settings_table_id):
     client = Client('https://connection.eu-central-1.keboola.com', tkn)

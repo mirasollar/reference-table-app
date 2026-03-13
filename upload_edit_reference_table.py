@@ -420,8 +420,9 @@ def get_now_utc():
     return now_utc.strftime('%Y-%m-%d, %H:%M:%S')
 
 def get_table_name_suffix():
-    headers = st.context.headers
-    return re.sub('-', '_', headers['Host'].split('.')[0])
+    headers = st.context.headers 
+    host = re.sub('-', '_', headers['Host'].split('.')[0])
+    return re.sub('app_', '', host)
 
 def get_password_dataframe(table_name):
     kbc_client.tables.export_to_file(table_id = table_name, path_name='.')
